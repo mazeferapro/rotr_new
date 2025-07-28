@@ -44,8 +44,8 @@ NextRP.Style.Materials = {
 
     CharacterSystemBackground = 'https://i.imgur.com/p95UVLW.jpeg',  -- Фон системы персонажей
 
-    LogoWatermark = 'https://i.imgur.com/aHBQua4.png',              -- Лого "Ватермарка", без лишних элементов
-    LogoNormal = 'https://i.imgur.com/aHBQua4.png',                 -- Нормальное лого
+    LogoWatermark = 'https://i.ibb.co/BVGDVPGD/Chat-GPT-Image-21-2025-15-20-41.png',              -- Лого "Ватермарка", без лишних элементов
+    LogoNormal = 'https://i.ibb.co/BVGDVPGD/Chat-GPT-Image-21-2025-15-20-41.png',                 -- Нормальное лого
 
     CloneIcon = 'https://i.imgur.com/JZ4VhnU.png',                  -- Иконка для клонов
     DroidIcon = 'https://i.imgur.com/IgF8O7L.png',                  -- Иконка для дроидов

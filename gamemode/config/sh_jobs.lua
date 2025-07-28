@@ -495,6 +495,19 @@ TEAM_CTRP = NextRP.createJob('Боец 882-го', {
                     'weapon_bactainjector',
                     'weapon_bactanade',
                     'arccw_k_nade_smoke',
+                    'medic_blood',
+                    'medic_dosimetr',
+                    'medic_ecg_temp',
+                    'medic_exam',
+                    'medic_nerv_maleol',
+                    'medic_ophtalmoscope',
+                    'medic_otoscope',
+                    'medic_pulseoxymetr',
+                    'medic_expresstest_flu',
+                    'medic_scapula',
+                    'medic_shethoscope',
+                    'medic_therm',
+                    'medic_tonometr'
                 },
                 default = {
                     'arccw_k_dc17ext'
@@ -523,7 +536,20 @@ TEAM_CTRP = NextRP.createJob('Боец 882-го', {
                     'arccw_k_dc17ext_akimbo',
                     'weapon_stunstick',
                     'weapon_cuff_elastic',
-                    'arccw_k_nade_stun'
+                    'arccw_k_nade_stun',
+                    'medic_blood',
+                    'medic_dosimetr',
+                    'medic_ecg_temp',
+                    'medic_exam',
+                    'medic_nerv_maleol',
+                    'medic_ophtalmoscope',
+                    'medic_otoscope',
+                    'medic_pulseoxymetr',
+                    'medic_expresstest_flu',
+                    'medic_scapula',
+                    'medic_shethoscope',
+                    'medic_therm',
+                    'medic_tonometr'
                 },
                 default = {
                     'arccw_k_dc17_stun'
@@ -758,6 +784,7 @@ TEAM_CTRP = NextRP.createJob('Боец 882-го', {
     start = false,
     walkspead = 100,
     runspead = 250,
+    Salary = 100,
     category = '882-й Горный Батальон'
 })
 
@@ -1147,6 +1174,7 @@ TEAM_TSGRP = NextRP.createJob('Боец ТСГ', {
     start = false,
     walkspead = 100,
     runspead = 250,
+    Salary = 100,
     category = 'ARC TSG'
 })
 
@@ -1680,6 +1708,7 @@ TEAM_BRAVORP = NextRP.createJob('Боец ARC Браво', {
     start = false,
     walkspead = 100,
     runspead = 250,
+    Salary = 100,
     category = 'ARC BRAVO'
 })
 
@@ -2088,6 +2117,7 @@ TEAM_ARCRP = NextRP.createJob('Боец ARC', {
     start = false,
     walkspead = 100,
     runspead = 250,
+    Salary = 100,
     category = 'Батальон ЭРК'
 })
 
@@ -2145,6 +2175,7 @@ TEAM_RCRP = NextRP.createJob('Республиканский коммандос'
     start = false,
     walkspead = 150,
     runspead = 300,
+    Salary = 100,
     -- Категория
     category = 'Республиканский коммандос'
 })
@@ -2234,6 +2265,7 @@ TEAM_WRECKERRCRP = NextRP.createJob('Республиканский комман
     start = false,
     walkspead = 150,
     runspead = 300,
+    Salary = 100,
     -- Категория
     category = 'Республиканский коммандос'
 })
@@ -2401,6 +2433,7 @@ TEAM_ARCALPHARP = NextRP.createJob('Боец ARC Alpha', {
     start = false,
     walkspead = 150,
     runspead = 300,
+    Salary = 100,
     -- Категория
     category = 'ARC | Alpha'
 })
@@ -2569,6 +2602,19 @@ TEAM_ARCNULLRP = NextRP.createJob('Боец ARC Null', {
             },
             weapon = {
                 ammunition = {
+                    'medic_blood',
+                    'medic_dosimetr',
+                    'medic_ecg_temp',
+                    'medic_exam',
+                    'medic_nerv_maleol',
+                    'medic_ophtalmoscope',
+                    'medic_otoscope',
+                    'medic_pulseoxymetr',
+                    'medic_expresstest_flu',
+                    'medic_scapula',
+                    'medic_shethoscope',
+                    'medic_therm',
+                    'medic_tonometr'
                 },
                 default = {
                     'arccw_k_dc17sa_dual',
@@ -2587,6 +2633,19 @@ TEAM_ARCNULLRP = NextRP.createJob('Боец ARC Null', {
             },
             weapon = {
                 ammunition = {
+                    'medic_blood',
+                    'medic_dosimetr',
+                    'medic_ecg_temp',
+                    'medic_exam',
+                    'medic_nerv_maleol',
+                    'medic_ophtalmoscope',
+                    'medic_otoscope',
+                    'medic_pulseoxymetr',
+                    'medic_expresstest_flu',
+                    'medic_scapula',
+                    'medic_shethoscope',
+                    'medic_therm',
+                    'medic_tonometr'
                 },
                 default = {
                     'arccw_k_dc17sa_dual',
@@ -2643,6 +2702,7 @@ TEAM_ARCNULLRP = NextRP.createJob('Боец ARC Null', {
     start = false,
     walkspead = 150,
     runspead = 300,
+    Salary = 100,
     -- Категория
     category = 'ARC | Null'
 })
@@ -2696,6 +2756,7 @@ TEAM_MAZENRP = NextRP.createJob('Представитель Республика
     start = true,
     walkspead = 100,
     runspead = 250,
+    Salary = 100,
     -- Категория
     category = 'Штаб'
 })
@@ -2846,6 +2907,7 @@ TEAM_HQNRP = NextRP.createJob('Боец Штаба', {
     start = true,
     walkspead = 100,
     runspead = 250,
+    Salary = 100,
     -- Категория
     category = 'Штаб'
 })
@@ -3038,6 +3100,7 @@ TEAM_ARFRANCOR = NextRP.createJob('Боец ARF Rancor', {
     start = true,
     walkspead = 100,
     runspead = 250,
+    Salary = 100,
     -- Категория
     category = 'ARF Rancor'
 })
@@ -3093,6 +3156,71 @@ TEAM_TPROLL = NextRP.createJob('РП Роль', {
     category = 'RP'
 })
 
+TEAM_CITYNRP = NextRP.createJob('Неизвестный', {
+    -- НЕОБХОДИМЫЕ НАСТРОЙКИ
+    id = 'citynrp', -- УНИКАЛЬНЫЙ ID ПРОФЫ, без него вся система персонажей идёт нахуй
+    -- Модель(и)
+    model = { -- Модели
+                'models/player/combine_super_soldier.mdl'
+            },
+    color = Color(127, 143, 166),
+    -- Звания
+    default_rank = 'Unknown',
+    ranks = {
+        ['Unknown'] = {
+            -- Порядок сортировки, снизу вверх
+            sortOrder = 1,
+            -- Основные настройки
+            model = { -- Модели
+                'models/assassin/pm_civ_assassin_human_female.mdl',
+                'models/bride/pm_civ_bride_costume_female.mdl',
+                'models/cyborg/pm_civ_cyborg_costume_male.mdl',
+                'models/dweller/pm_civ_dweller_human_female.mdl',
+                'models/dweller/pm_civ_dweller_human_male.mdl',
+                'models/engineer/pm_civ_engineer_human_female.mdl',
+                'models/engineer/pm_civ_engineer_human_male.mdl',
+                'models/formal/pm_civ_formal_human_female.mdl',
+                'models/formal/pm_civ_formal_human_male.mdl',
+                'models/merc/pm_civ_merc_human_female.mdl',
+                'models/merc/pm_civ_merc_human_male.mdl',
+                'models/noble/pm_civ_noble_human_female.mdl',
+                'models/noble/pm_civ_noble_human_male.mdl',
+                'models/ranger/pm_civ_ranger_costume_female.mdl',
+                'models/rebel/pm_civ_rebel_costume_male.mdl',
+                'models/renegade/pm_civ_renegade_human_female.mdl',
+                'models/renegade/pm_civ_renegade_human_male.mdl',
+                'models/resident/pm_civ_resident_human_female.mdl',
+                'models/resident/pm_civ_resident_human_male.mdl',
+                'models/scientist/pm_civ_scientist_human_female.mdl',
+            },
+            hp = 100, -- ХП
+            ar = 50, -- Армор
+            weapon = { -- Оружие
+                default = {}, -- При спавне
+                ammunition = {} -- В оружейке
+            },
+            -- Форматирование
+            -- natoCode = 'OR-1',
+            fullRank = 'Неизвестный',
+            -- Вайтлист
+            whitelist = false -- Может ли выдавать эту профу
+        }
+    },
+    flags = {
+
+    },
+
+    -- ТИПы и КОНТРОЛы
+    type = TYPE_RPROLE, -- ТИП, могут быть TYPE_USA, TYPE_RUSSIA, TYPE_TERROR, TYPE_OTHER, TYPE_ADMIN, TYPE_RPROLE   control = CONTROL_NATO
+    control = CONTROL_NONE, -- КОНТРОЛ, можеть быть CONTROL_NATO, CONTROL_TERRORISTS, CONTROL_HEADHUNTERS, CONTROL_NONE
+    -- Стартовая
+    start = false,
+    walkspead = 100,
+    runspead = 250,
+    -- Категория
+    category = 'RP'
+})
+
 --
 
 TEAM_AGENTGAR = NextRP.createJob('Агент ВАР', {
@@ -3122,7 +3250,20 @@ TEAM_AGENTGAR = NextRP.createJob('Агент ВАР', {
                     'realistic_hook',
                     'arccw_k_nade_bacta',
                     'weapon_defibrillator',
-                    'weapon_bactainjector'
+                    'weapon_bactainjector',
+                    'medic_blood',
+                    'medic_dosimetr',
+                    'medic_ecg_temp',
+                    'medic_exam',
+                    'medic_nerv_maleol',
+                    'medic_ophtalmoscope',
+                    'medic_otoscope',
+                    'medic_pulseoxymetr',
+                    'medic_expresstest_flu',
+                    'medic_scapula',
+                    'medic_shethoscope',
+                    'medic_therm',
+                    'medic_tonometr'
                 } -- В оружейке
             },
             -- Форматирование
@@ -3141,7 +3282,7 @@ TEAM_AGENTGAR = NextRP.createJob('Агент ВАР', {
     control = CONTROL_GAR, -- КОНТРОЛ, можеть быть CONTROL_NATO, CONTROL_TERRORISTS, CONTROL_HEADHUNTERS, CONTROL_NONE
     -- Стартовая
     start = false,
-    Salary = 25,
+    Salary = 100,
     -- Категория
     category = 'Наёмники ВАР'
 })
@@ -3198,7 +3339,7 @@ TEAM_MERC = NextRP.createJob('Наёмник', {
     control = CONTROL_GAR, -- КОНТРОЛ, можеть быть CONTROL_NATO, CONTROL_TERRORISTS, CONTROL_HEADHUNTERS, CONTROL_NONE
     -- Стартовая
     start = false,
-    Salary = 25,
+    Salary = 100,
     -- Категория
     category = 'Наёмники ВАР'
 })

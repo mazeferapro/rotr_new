@@ -1,8 +1,8 @@
 Kitsune_Arrest = Kitsune_Arrest or {}
 
 Kitsune_Arrest.Access = {
-    ['Боец 327-го'] = true,
-    ['Боец Бюро Безопастности'] = true
+    ['Боец 882-го'] = true,
+    ['ARF Rancor'] = true
 }
 
 Kitsune_Arrest.Rooms = {

@@ -40,7 +40,7 @@ function ENT:Draw()
 
 	if alpha > 0 then
 		cam.Start3D2D( pos, ang, 0.025 )
-			draw.SimpleText( 'Терминал обучения', 'font_sans_3d2d_large', 0, 0, Color(225, 177, 44, alpha), TEXT_ALIGN_CENTER )
+			draw.SimpleText( 'Терминал обучения!!', 'font_sans_3d2d_large', 0, 0, Color(225, 177, 44, alpha), TEXT_ALIGN_CENTER )
 			draw.SimpleText( 'Получить форму можно тут.', 'font_sans_3d2d_small', 0, 128, Color(255,255,255, alpha), TEXT_ALIGN_CENTER )			
 			draw.SimpleText( 'Нажмите [Е] что бы воспользоваться.', 'font_sans_3d2d_small', 0, 128 + 72, Color(255,255,255, alpha), TEXT_ALIGN_CENTER )			
 		cam.End3D2D()

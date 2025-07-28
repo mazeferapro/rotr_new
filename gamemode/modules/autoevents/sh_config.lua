@@ -2633,18 +2633,6 @@ NextRP.AutoEvents.Config = {
     -- Расписание ивентов (конкретные ивенты в конкретное время)
     Schedule = {
         {
-            name = "Оборона (Набу)",
-            hour = 09,
-            minute = 00,
-            map = "rp_naboo_city_v2_3"
-        },
-        {
-            name = "Захват (Конфликт в пустыне)",
-            hour = 14,
-            minute = 00,
-            map = "rp_desert_conflict"
-        },
-        {
             name = "Оборона (Майгито)",
             hour = 22,
             minute = 00,

@@ -56,8 +56,7 @@ ArrestantsTime = ArrestantsTime or {}
 
 
 local Access = {
-    ['Боец 327-го'] = true,
-    ['Боец Корусантской гвардии'] = true
+    ['Боец 882-го'] = true
 }
 
 function ENT:Use( activator, Caller )

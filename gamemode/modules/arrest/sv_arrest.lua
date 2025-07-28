@@ -67,7 +67,7 @@ function RespawnArrest(pTarget)
             end
             ArrestedWeapon[pTarget:SteamID()] = nil
         end
-        pTarget:SetPos(Vector(9585.024414, 14745.411133, -14195.968750))
+        pTarget:SetPos(Vector(8260.703125, 9796.092773, -14007.968750))
         hook.Run('KitsuneArrestTrack')
     end
 end

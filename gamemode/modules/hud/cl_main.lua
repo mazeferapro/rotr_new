@@ -826,6 +826,10 @@ local function DrawPlayerHUD()
     DrawShadowText(player:Name(), "hud_name", info_x, info_y, COLORS.text_bright, info_align)
     DrawShadowText(team.GetName(player:Team()), "hud_team", info_x, info_y + 25, COLORS.text_dim, info_align)
     
+    if NextRP.MoneyHUD and NextRP.MoneyHUD.DrawMoney then
+        NextRP.MoneyHUD:DrawMoney(75, 800, info_align)
+    end
+            
     -- Health bar
     if helmet_state then
         -- HELMET MODE - original slanted bars
@@ -993,6 +997,7 @@ net.Receive("testhit", function()
         })
     end
 end)
+
 
 -- Hook our HUD to the game
 hook.Add("HUDPaint", "NewEnhancedHUD", DrawHUD)

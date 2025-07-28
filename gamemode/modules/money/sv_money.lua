@@ -12,11 +12,9 @@ local function PayDay()
         local curMoney = v:GetMoney()
         local newMoney = curMoney + tJob.Salary
 
-        v:SetCharValue('money', newMoney, function()
-            v:LoadCharacter(function()
-                v:SendNotification('Вы получили '..tJob.Salary..' CR!', 0, 3, NextRP.Style.Theme.Accent, NextRP.Style.Theme.Text)
-            end, v:GetNVar('nrp_charid'))
-        end)
+        v:SetMoney(newMoney)
+
+        v:SendNotification('Вы получили '..tJob.Salary..' CR!', 0, 3, NextRP.Style.Theme.Accent, NextRP.Style.Theme.Text)
     end
 end
 

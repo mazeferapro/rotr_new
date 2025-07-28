@@ -6,55 +6,55 @@ end
 
 local cTable = {
     ['Гранаты'] = {
-        ['arccw_k_nade_bacta'] = 50,
-        ['arccw_k_nade_thermal'] = 25,
-        ['arccw_k_nade_shock'] = 30,
-        ['arccw_k_nade_impact'] = 20,
+        ['arccw_k_nade_bacta'] = 800,
+        ['arccw_k_nade_thermal'] = 900,
+        ['arccw_k_nade_shock'] = 500,
+        ['arccw_k_nade_impact'] = 1200,
     },
     ['Тяжелое вооружение'] = {
-        ['arccw_k_launcher_smartlauncher'] = 1300,
-        ['arccw_k_z6'] = 1450,
-        ['arccw_sops_republic_z6chaingun'] = 1700,
-        ['arccw_k_launcher_rps6'] = 1200,
-        ['arccw_k_launcher_plx1'] = 1900,
+        ['arccw_k_launcher_smartlauncher'] = 50000,
+        ['arccw_k_z6'] = 25000,
+        ['arccw_sops_republic_z6chaingun'] = 26000,
+        ['arccw_k_launcher_rps6'] = 40000,
+        ['arccw_k_launcher_plx1'] = 42000,
     },
     ['Бластерные пистолеты'] = {
-        ['arccw_k_dc17ext'] = 150,
-        ['arccw_k_dc17'] = 100,
-        ['arccw_k_dc17sa'] = 170,
-        ['arccw_sops_galactic_a180'] = 95,
+        ['arccw_k_dc17ext'] = 2500,
+        ['arccw_k_dc17'] = 2000,
+        ['arccw_k_dc17sa'] = 2700,
+        ['arccw_sops_galactic_a180'] = 2500,
     },
     ['Двойное вооружение'] = {
-        ['arccw_k_dc17_akimbo'] = 258,
-        ['arccw_k_dc17ext_akimbo'] = 270,
-        ['arccw_k_dc17sa_dual'] = 300,
+        ['arccw_k_dc17_akimbo'] = 5008,
+        ['arccw_k_dc17ext_akimbo'] = 5700,
+        ['arccw_k_dc17sa_dual'] = 6000,
     },
     ['Бластерные винтовки'] = {
-        ['arccw_k_dc15a'] = 400,
-        ['arccw_k_dc15s_grenadier'] = 480,
-        ['arccw_k_dc15le'] = 500,
-        ['arccw_k_republic_e9'] = 500,
-        ['arccw_k_dp24'] = 560,
-        ['arccw_sops_galactic_galaar15'] = 550,
+        ['arccw_k_dc15a'] = 10000,
+        ['arccw_k_dc15s_grenadier'] = 11080,
+        ['arccw_k_dc15le'] = 12000,
+        ['arccw_k_republic_e9'] = 10000,
+        ['arccw_k_dp24'] = 11000,
+        ['arccw_sops_galactic_galaar15'] = 7000,
     },
     ['Снайперские винтовки'] = {
-        ['arccw_k_dc15x'] = 3000,
-        ['arccw_k_valken38'] = 1500,
-        ['arccw_sops_galactic_mandorifle'] = 5500,
+        ['arccw_k_dc15x'] = 15000,
+        ['arccw_k_valken38'] = 19000,
+        ['arccw_sops_galactic_mandorifle'] = 20000,
     },
     ['Дробовики'] = {
-        ['arccw_k_sb2'] = 700,
-        ['arccw_k_dp23'] = 1000,
-        ['arccw_sops_galactic_wookieslug'] = 1400,
+        ['arccw_k_sb2'] = 7000,
+        ['arccw_k_dp23'] = 10000,
+        ['arccw_sops_galactic_wookieslug'] = 5000,
     },
     ['Прочее'] = {
-        ['realistic_hook'] = 500,
-        ['jet_mk5'] = 1500,
-        ['weapon_bactainjector'] = 600,
-        ['arccw_sops_vibroknife'] = 950,
-        ['weapon_cuff_elastic'] = 300,
-        ['fort_datapad'] = 550,
-        ['arccw_eq_mortar'] = 950
+        ['realistic_hook'] = 5000,
+        ['jet_mk5'] = 15000,
+        ['weapon_bactainjector'] = 6000,
+        ['arccw_sops_vibroknife'] = 9500,
+        ['weapon_cuff_elastic'] = 3000,
+        ['fort_datapad'] = 5500,
+        ['arccw_eq_mortar'] = 150000
     }
 }
 
@@ -64,7 +64,6 @@ local function generateWeapons(scrollPanel, tWeapons, sWeapons, cat)
         :Stick(TOP, 2)
         :ClearPaint()
         :On('OnToggle', function(self)
-
             if self:GetExpanded() then
                 self.Header:TDLib()
                     :ClearPaint()
@@ -74,7 +73,6 @@ local function generateWeapons(scrollPanel, tWeapons, sWeapons, cat)
                     :ClearPaint()
                     :Background(NextRP.Style.Theme.DarkBlue)
             end
-
         end)
 
     DCategory.Header:TDLib()
@@ -90,13 +88,11 @@ local function generateWeapons(scrollPanel, tWeapons, sWeapons, cat)
     DCategory.Header:SetTall(25)
 
     local contents = vgui.Create('DPanelList', DCategory)
-
     contents:SetPadding(0)
     contents:SetSpacing(4)
     DCategory:SetContents(contents)
 
     for wep, price in pairs(sWeapons) do
-        local sell = false
         local tWep = weapons.Get(wep)
         if tWep == nil then continue end
 
@@ -108,7 +104,6 @@ local function generateWeapons(scrollPanel, tWeapons, sWeapons, cat)
 
         local icon = vgui.Create('PawsUI.Panel', pnl)
             :Stick(LEFT, 2)
-
 
         PAW_MODULE('lib'):Download('nw/noicon.png', 'https://i.imgur.com/yaqb1ND.png', function(dPath)
             local mat = Material(dPath, 'smooth')
@@ -136,16 +131,45 @@ local function generateWeapons(scrollPanel, tWeapons, sWeapons, cat)
             :FadeHover(NextRP.Style.Theme.Accent)
             :LinedCorners()
             :On('Think', function(s)
-                if LocalPlayer():HasWeapon(wep) and tWeapons[wep] then
-                    s:Text('Продать за '..(price/2)..' CR', 'font_sans_21')
-                    sell = true
+                local hasValidAccess = false
+                local timeText = ""
+                
+                if tWeapons[wep] and istable(tWeapons[wep]) and tWeapons[wep].expiry then
+                    hasValidAccess = os.time() < tWeapons[wep].expiry
+                    
+                    if hasValidAccess then
+                        local timeLeft = tWeapons[wep].expiry - os.time()
+                        local hours = math.floor(timeLeft / 3600)
+                        local minutes = math.floor((timeLeft % 3600) / 60)
+                        local seconds = timeLeft % 60
+                        timeText = string.format(" (%02d:%02d:%02d)", hours, minutes, seconds)
+                    end
+                end
+                
+                if LocalPlayer():HasWeapon(wep) and hasValidAccess then
+                    s:Text('У вас уже есть это оружие', 'font_sans_21')
+                    s:SetEnabled(false)
+                elseif hasValidAccess then
+                    s:Text('Получить' .. timeText, 'font_sans_21')
+                    s:SetEnabled(true)
                 else
-                    s:Text(tWeapons[wep] and 'Получить' or 'Купить за '..price..' CR', 'font_sans_21')
+                    s:Text('Купить за '..price..' CR (30 дней)', 'font_sans_21')
+                    s:SetEnabled(true)
                 end
             end)
             :On('DoClick', function()
-                if tWeapons[wep] and !sell then price = 'give' end
-                netstream.Start('NextRP::BuyOrGiveWeapon', wep, price, sell or nil)
+                local hasValidAccess = false
+                if tWeapons[wep] and istable(tWeapons[wep]) and tWeapons[wep].expiry then
+                    hasValidAccess = os.time() < tWeapons[wep].expiry
+                end
+                
+                if LocalPlayer():HasWeapon(wep) and hasValidAccess then
+                    return -- Ничего не делаем, если оружие уже есть
+                elseif hasValidAccess then
+                    price = 'give'
+                end
+                
+                netstream.Start('NextRP::BuyOrGiveWeapon', wep, price, nil)
             end)
 
         pnl:SetTall(64 + 2)
@@ -204,10 +228,13 @@ local function VendorMenu(tWeapons)
     for k, v in pairs(cTable) do
         generateWeapons(scrollPanel, tWeapons, v, k)
     end
-
 end
 
 netstream.Hook('NextRP::WepVendorStart', function(pPlayer, tWeapons)
-    if tWeapons == 'empty' then tWeapons = {} else tWeapons = util.JSONToTable(tWeapons) end
+    if tWeapons == 'empty' then 
+        tWeapons = {} 
+    else 
+        tWeapons = util.JSONToTable(tWeapons) 
+    end
     VendorMenu(tWeapons)
 end)

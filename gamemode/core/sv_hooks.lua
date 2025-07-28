@@ -18,6 +18,20 @@ hook.Add("EntityEmitSound", "ReduceAllSoundsExceptVoice", function(soundData)
     return true
 end)
 
+hook.Add("EntityNetworkedVarChanged", "NextRP_MoneyHUDSync", function(ent, name, oldval, newval)
+    if not IsValid(ent) or not ent:IsPlayer() then return end
+    if name ~= "nrp_money" then return end
+    
+    -- Принудительно обновляем HUD при изменении денег
+    if netstream then
+        netstream.Start(ent, 'NextRP::MoneyUpdated', newval or 0)
+    end
+    
+    print("[Money HUD] Synced money change for " .. ent:Nick() .. ": " .. (oldval or 0) .. " -> " .. (newval or 0))
+end)
+
+print("[NextRP.Money] Серверная часть HUD уведомлений загружена!")
+
 -- Этот хук срабатывает, когда игрок заходит на сервер
 hook.Add("PlayerInitialSpawn", "SetPlayerLerp", function(ply)
     -- Команда для установки Lerp (команда cl_interp в Garry's Mod)

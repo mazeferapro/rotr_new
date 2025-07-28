@@ -31,7 +31,6 @@ NextRP.AutoEvents.ServerTime = {
     timezone_offset = 0
 }
 
-
 print("[AutoEvents] Клиентская часть загружена")
 
 -- Получение данных HUD
@@ -87,11 +86,32 @@ function NextRP.AutoEvents.GetServerTime()
     return {hour = current_hour, minute = current_minute}
 end
 
--- HUD ивента
+-- Упрощенный HUD ивента (только текст для отсчета)
 hook.Add("HUDPaint", "AutoEvents_HUD", function()
-    if not NextRP.AutoEvents.HUD.active and 
-       not NextRP.AutoEvents.HUD.preparation_active and 
-       not NextRP.AutoEvents.HUD.schedule_countdown_active then 
+    -- Показываем только текст отсчета до следующего ивента
+    if NextRP.AutoEvents.HUD.schedule_countdown_active then
+        local scrW, scrH = ScrW(), ScrH()
+        
+        -- Время до ивента
+        local countdownTime = math.max(0, NextRP.AutoEvents.HUD.schedule_countdown_time_left)
+        local hours = math.floor(countdownTime / 3600)
+        local minutes = math.floor((countdownTime % 3600) / 60)
+        
+        local timeStr = ""
+        if hours > 0 then
+            timeStr = string.format("%d ч %d мин", hours, minutes)
+        else
+            timeStr = string.format("%d мин", minutes)
+        end
+        
+        -- Единственная надпись в правом нижнем углу
+        local eventText = "Следующий ивент " .. NextRP.AutoEvents.HUD.schedule_countdown_event_name .. " до начала " .. timeStr
+        draw.SimpleText(eventText, "DermaDefault", scrW - 150, scrH - 150, Color(100, 200, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+        return
+    end
+    
+    -- Остальной HUD для активных ивентов и подготовки (если нужен)
+    if not NextRP.AutoEvents.HUD.active and not NextRP.AutoEvents.HUD.preparation_active then 
         return 
     end
     
@@ -107,10 +127,7 @@ hook.Add("HUDPaint", "AutoEvents_HUD", function()
     local title = "АВТО-ИВЕНТ"
     local titleColor = Color(255, 200, 0)
     
-    if NextRP.AutoEvents.HUD.schedule_countdown_active then
-        title = "СЛЕДУЮЩИЙ ИВЕНТ"
-        titleColor = Color(100, 200, 255)
-    elseif NextRP.AutoEvents.HUD.preparation_active then
+    if NextRP.AutoEvents.HUD.preparation_active then
         title = "ПОДГОТОВКА К ИВЕНТУ"
         titleColor = Color(255, 165, 0)
     elseif NextRP.AutoEvents.HUD.event_type == "defense" then
@@ -121,77 +138,7 @@ hook.Add("HUDPaint", "AutoEvents_HUD", function()
     
     draw.SimpleText(title, "DermaDefaultBold", panelX + panelW/2, panelY + 15, titleColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     
-    if NextRP.AutoEvents.HUD.schedule_countdown_active then
-        -- === РЕЖИМ ОТСЧЕТА ДО ИВЕНТА ===
-        
-        -- Время до ивента
-        local countdownTime = math.max(0, NextRP.AutoEvents.HUD.schedule_countdown_time_left)
-        local hours = math.floor(countdownTime / 3600)
-        local minutes = math.floor((countdownTime % 3600) / 60)
-        local seconds = math.floor(countdownTime % 60)
-        
-        local timeStr = ""
-        if hours > 0 then
-            timeStr = string.format("%02d:%02d:%02d", hours, minutes, seconds)
-        else
-            timeStr = string.format("%02d:%02d", minutes, seconds)
-        end
-        
-        draw.SimpleText("До начала: " .. timeStr, "DermaDefault", panelX + 15, panelY + 40, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        
-        -- Название ивента
-        local eventName = NextRP.AutoEvents.HUD.schedule_countdown_event_name
-        if string.len(eventName) > 25 then
-            eventName = string.sub(eventName, 1, 22) .. "..."
-        end
-        draw.SimpleText("Ивент: " .. eventName, "DermaDefault", panelX + 15, panelY + 60, Color(200, 255, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        
-        -- Название карты
-        local mapName = NextRP.AutoEvents.HUD.schedule_countdown_map_name
-        local map_data = NextRP.AutoEvents.Config.Maps and NextRP.AutoEvents.Config.Maps[mapName]
-        local displayMapName = map_data and map_data.name or mapName
-        if string.len(displayMapName) > 25 then
-            displayMapName = string.sub(displayMapName, 1, 22) .. "..."
-        end
-        draw.SimpleText("Карта: " .. displayMapName, "DermaDefault", panelX + 15, panelY + 80, Color(200, 200, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        
-        -- Прогресс бар отсчета
-        local progressW = panelW - 30
-        local progressH = 8
-        local progressX = panelX + 15
-        local progressY = panelY + 100
-        
-        draw.RoundedBox(4, progressX, progressY, progressW, progressH, Color(60, 60, 60))
-        
-        -- Определяем максимальное время для прогресс-бара
-        local maxTime = 3600 -- 1 час максимум для отображения
-        if countdownTime > maxTime then maxTime = countdownTime end
-        
-        local progress = math.Clamp(1 - (countdownTime / maxTime), 0, 1)
-        local progressColor = Color(100, 200, 255) -- Синий для отсчета
-        
-        -- Меняем цвет в зависимости от оставшегося времени
-        if countdownTime <= 300 then -- Последние 5 минут
-            progressColor = Color(255, 165, 0) -- Оранжевый
-            if countdownTime <= 60 then -- Последняя минута
-                progressColor = Color(255, 100, 100) -- Красный
-            end
-        end
-        
-        draw.RoundedBox(4, progressX, progressY, progressW * progress, progressH, progressColor)
-        
-        -- Статус и подсказки
-        local statusY = panelY + 120
-        if countdownTime <= 60 then
-            local alpha = math.abs(math.sin(CurTime() * 3)) * 255
-            draw.SimpleText("СКОРО НАЧНЕТСЯ!", "DermaDefaultBold", panelX + panelW/2, statusY, Color(255, 100, 100, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        elseif countdownTime <= 300 then
-            draw.SimpleText("Готовьтесь к бою!", "DermaDefault", panelX + 15, statusY, Color(255, 200, 100), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        else
-            draw.SimpleText("Автоматический запуск", "DermaDefault", panelX + 15, statusY, Color(200, 200, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        end
-        
-    elseif NextRP.AutoEvents.HUD.preparation_active then
+    if NextRP.AutoEvents.HUD.preparation_active then
         -- === РЕЖИМ ПОДГОТОВКИ ===
         
         -- Время подготовки
@@ -200,109 +147,82 @@ hook.Add("HUDPaint", "AutoEvents_HUD", function()
         local seconds = math.floor(prepTime % 60)
         local timeStr = string.format("%02d:%02d", minutes, seconds)
         
-        draw.SimpleText("Подготовка: " .. timeStr, "DermaDefault", panelX + 15, panelY + 40, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        draw.SimpleText("Время подготовки: " .. timeStr, "DermaDefault", panelX + 15, panelY + 40, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
         
-        -- Прогресс бар подготовки
+        -- Подсказки
+        draw.SimpleText("Готовьтесь к бою!", "DermaDefault", panelX + 15, panelY + 60, Color(255, 200, 100), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        
+    elseif NextRP.AutoEvents.HUD.event_type == "defense" then
+        -- === РЕЖИМ ОБОРОНЫ ===
+        
+        -- Очки подкрепления
+        local reinforcements = NextRP.AutoEvents.HUD.reinforcement_points
+        local maxReinforcements = NextRP.AutoEvents.HUD.max_reinforcement_points
+        
+        draw.SimpleText("Подкрепления: " .. reinforcements .. " / " .. maxReinforcements, "DermaDefault", panelX + 15, panelY + 40, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        
+        -- Текущая волна
+        local wave = NextRP.AutoEvents.HUD.current_wave
+        draw.SimpleText("Волна: " .. wave, "DermaDefault", panelX + 15, panelY + 60, Color(200, 255, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        
+        -- Прогресс-бар подкрепления
         local progressW = panelW - 30
         local progressH = 8
         local progressX = panelX + 15
-        local progressY = panelY + 55
+        local progressY = panelY + 80
         
         draw.RoundedBox(4, progressX, progressY, progressW, progressH, Color(60, 60, 60))
         
-        local maxPrepTime = NextRP.AutoEvents.Config and NextRP.AutoEvents.Config.Settings and NextRP.AutoEvents.Config.Settings.preparation_time or 60
-        local progress = math.Clamp((maxPrepTime - prepTime) / maxPrepTime, 0, 1)
-        local progressColor = Color(255, 165, 0) -- Оранжевый для подготовки
+        local progress = reinforcements / maxReinforcements
+        local progressColor = Color(100, 255, 100)
+        if progress <= 0.3 then
+            progressColor = Color(255, 100, 100)
+        elseif progress <= 0.6 then
+            progressColor = Color(255, 200, 100)
+        end
         
         draw.RoundedBox(4, progressX, progressY, progressW * progress, progressH, progressColor)
         
-        -- Информация о предстоящем ивенте
-        local eventTypeText = ""
-        if NextRP.AutoEvents.HUD.event_type == "defense" then
-            eventTypeText = "Готовьтесь к обороне!"
-        elseif NextRP.AutoEvents.HUD.event_type == "capture" then
-            eventTypeText = "Готовьтесь к захвату!"
-        else
-            eventTypeText = "Приготовьтесь к бою!"
-        end
+    elseif NextRP.AutoEvents.HUD.event_type == "capture" then
+        -- === РЕЖИМ ЗАХВАТА ===
         
-        draw.SimpleText(eventTypeText, "DermaDefault", panelX + 15, panelY + 75, Color(255, 200, 100), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        -- Захваченные точки
+        local captured = NextRP.AutoEvents.HUD.captured_points
+        local maxPoints = NextRP.AutoEvents.HUD.max_capture_points
         
-        -- Очки подкрепления (предварительная информация)
-        draw.SimpleText("Очки подкрепления:", "DermaDefault", panelX + 15, panelY + 95, Color(200, 200, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        local reinforcementText = NextRP.AutoEvents.HUD.max_reinforcement_points .. " (макс.)"
-        draw.SimpleText(reinforcementText, "DermaDefaultBold", panelX + panelW - 15, panelY + 95, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-        
-        -- Мигающий текст в последние секунды
-        if prepTime <= 10 and prepTime > 0 then
-            local alpha = math.abs(math.sin(CurTime() * 5)) * 255
-            draw.SimpleText("НАЧИНАЕТСЯ!", "DermaDefaultBold", panelX + panelW/2, panelY + 120, Color(255, 0, 0, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        else
-            draw.SimpleText("Проверьте снаряжение", "DermaDefault", panelX + 15, panelY + 120, Color(200, 200, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        end
-        
-    else
-        -- === РЕЖИМ АКТИВНОГО ИВЕНТА ===
+        draw.SimpleText("Точки: " .. captured .. " / " .. maxPoints, "DermaDefault", panelX + 15, panelY + 40, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
         
         -- Время ивента
-        local timeLeft = math.max(0, NextRP.AutoEvents.HUD.time_left)
+        local timeLeft = NextRP.AutoEvents.HUD.time_left
         local minutes = math.floor(timeLeft / 60)
         local seconds = math.floor(timeLeft % 60)
         local timeStr = string.format("%02d:%02d", minutes, seconds)
         
-        draw.SimpleText("Время: " .. timeStr, "DermaDefault", panelX + 15, panelY + 40, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        draw.SimpleText("Время: " .. timeStr, "DermaDefault", panelX + 15, panelY + 60, Color(200, 200, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
         
-        -- Прогресс бар времени
+        -- Прогресс-бар захвата
         local progressW = panelW - 30
         local progressH = 8
         local progressX = panelX + 15
-        local progressY = panelY + 55
+        local progressY = panelY + 80
         
         draw.RoundedBox(4, progressX, progressY, progressW, progressH, Color(60, 60, 60))
         
-        local current_map = game.GetMap()
-        local map_data = NextRP.AutoEvents.Config.Maps and NextRP.AutoEvents.Config.Maps[current_map]
-        local maxTime = map_data and map_data.duration or 900
-        local progress = math.Clamp(timeLeft / maxTime, 0, 1)
-        local progressColor = progress > 0.3 and Color(0, 200, 0) or Color(200, 0, 0)
+        local progress = captured / maxPoints
+        local progressColor = Color(100, 200, 255)
         
         draw.RoundedBox(4, progressX, progressY, progressW * progress, progressH, progressColor)
+    end
+    
+    -- Дополнительная информация
+    local infoY = panelY + 100
+    if NextRP.AutoEvents.HUD.time_left and NextRP.AutoEvents.HUD.time_left > 0 and NextRP.AutoEvents.HUD.event_type ~= "capture" then
+        local timeLeft = NextRP.AutoEvents.HUD.time_left
+        local minutes = math.floor(timeLeft / 60)
+        local seconds = math.floor(timeLeft % 60)
+        local timeStr = string.format("%02d:%02d", minutes, seconds)
         
-        -- Очки подкрепления (главный показатель)
-        local reinforcementY = panelY + 75
-        draw.SimpleText("Очки подкрепления:", "DermaDefault", panelX + 15, reinforcementY, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        
-        local reinforcementText = NextRP.AutoEvents.HUD.reinforcement_points .. "/" .. NextRP.AutoEvents.HUD.max_reinforcement_points
-        local reinforcementColor = Color(255, 255, 255)
-        
-        -- Цвет в зависимости от количества очков
-        local reinforcementPercent = NextRP.AutoEvents.HUD.reinforcement_points / math.max(1, NextRP.AutoEvents.HUD.max_reinforcement_points)
-        if reinforcementPercent > 0.6 then
-            reinforcementColor = Color(0, 255, 0) -- Зеленый
-        elseif reinforcementPercent > 0.3 then
-            reinforcementColor = Color(255, 255, 0) -- Желтый
-        else
-            reinforcementColor = Color(255, 0, 0) -- Красный
-        end
-        
-        draw.SimpleText(reinforcementText, "DermaDefaultBold", panelX + panelW - 15, reinforcementY, reinforcementColor, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-        
-        -- Прогресс бар очков подкрепления
-        local reinforcementBarY = panelY + 90
-        draw.RoundedBox(4, progressX, reinforcementBarY, progressW, progressH, Color(60, 60, 60))
-        draw.RoundedBox(4, progressX, reinforcementBarY, progressW * reinforcementPercent, progressH, reinforcementColor)
-        
-        -- Дополнительная информация
-        local infoY = panelY + 110
-        
-        if NextRP.AutoEvents.HUD.event_type == "defense" then
-            draw.SimpleText("Волна: " .. NextRP.AutoEvents.HUD.current_wave, "DermaDefault", panelX + 15, infoY, Color(200, 200, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-            draw.SimpleText("Не покидайте зону!", "DermaDefault", panelX + 15, infoY + 20, Color(255, 200, 100), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        elseif NextRP.AutoEvents.HUD.event_type == "capture" then
-            local captureText = "Точки: " .. NextRP.AutoEvents.HUD.captured_points .. "/" .. NextRP.AutoEvents.HUD.max_capture_points
-            draw.SimpleText(captureText, "DermaDefault", panelX + 15, infoY, Color(200, 255, 200), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-            draw.SimpleText("Захватывайте точки!", "DermaDefault", panelX + 15, infoY + 20, Color(255, 200, 100), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        end
+        draw.SimpleText("Время ивента: " .. timeStr, "DermaDefault", panelX + 15, infoY + 20, Color(255, 200, 100), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
     end
 end)
 
@@ -331,7 +251,7 @@ function NextRP.AutoEvents.OpenAdminPanel()
     
     infoPanel:On('Paint', function(s, w, h)
         local current_map = game.GetMap()
-        local map_data = NextRP.AutoEvents.Config.Maps[current_map]
+        local map_data = NextRP.AutoEvents.Config.Maps and NextRP.AutoEvents.Config.Maps[current_map]
         
         if map_data then
             draw.SimpleText("Текущая карта: " .. map_data.name, "DermaDefaultBold", 10, 10, Color(255, 255, 255))
@@ -345,190 +265,38 @@ function NextRP.AutoEvents.OpenAdminPanel()
                                   " через " .. string.format("%02d:%02d", hours, minutes)
                 draw.SimpleText(statusText, "DermaDefault", 10, 55, Color(100, 200, 255))
             elseif NextRP.AutoEvents.HUD.preparation_active then
-                local statusText = "Подготовка к ивенту | Осталось: " .. math.floor(NextRP.AutoEvents.HUD.preparation_time_left) .. " сек"
-                draw.SimpleText(statusText, "DermaDefault", 10, 55, Color(255, 165, 0))
+                draw.SimpleText("Статус: Подготовка к ивенту", "DermaDefault", 10, 55, Color(255, 165, 0))
             elseif NextRP.AutoEvents.HUD.active then
-                local statusText = "Ивент активен | Очки: " .. NextRP.AutoEvents.HUD.reinforcement_points .. "/" .. NextRP.AutoEvents.HUD.max_reinforcement_points
-                draw.SimpleText(statusText, "DermaDefault", 10, 55, Color(0, 255, 0))
+                draw.SimpleText("Статус: Ивент активен", "DermaDefault", 10, 55, Color(0, 255, 0))
             else
-                draw.SimpleText("Ивент неактивен", "DermaDefault", 10, 55, Color(255, 100, 100))
+                draw.SimpleText("Статус: Готов", "DermaDefault", 10, 55, Color(200, 200, 200))
             end
         else
-            draw.SimpleText("Карта не настроена", "DermaDefaultBold", 10, 25, Color(255, 100, 100))
+            draw.SimpleText("Карта не настроена для ивентов", "DermaDefault", 10, 10, Color(255, 100, 100))
         end
     end)
     
-    -- Вкладки
-    local tabPanel = vgui.Create("DPropertySheet", frame)
-    tabPanel:Dock(FILL)
-    tabPanel:DockMargin(10, 0, 10, 10)
-    
-    -- Вкладка карт
-    local mapsPanel = vgui.Create("DPanel", tabPanel)
-    mapsPanel:SetBackgroundColor(Color(35, 35, 40))
-    
-    local mapsScroll = vgui.Create("PawsUI.ScrollPanel", mapsPanel)
-    mapsScroll:Dock(FILL)
-    mapsScroll:DockMargin(5, 5, 5, 5)
-    
-    for map_name, map_data in pairs(NextRP.AutoEvents.Config.Maps) do
-        local mapPanel = vgui.Create("PawsUI.Panel")
-        mapPanel:SetTall(100)
-        mapPanel:Stick(TOP, 5)
-        mapPanel:Background(Color(45, 45, 50, 200))
-        
-        mapPanel:On('Paint', function(s, w, h)
-            draw.SimpleText(map_data.name, "DermaDefaultBold", 15, 15, Color(255, 255, 255))
-            draw.SimpleText(map_data.description or "Нет описания", "DermaDefault", 15, 35, Color(180, 180, 180))
-            
-            local typeText = map_data.is_main and "Основная карта" or ("Ивентовая (" .. (map_data.event_type or "неизвестно") .. ")")
-            draw.SimpleText(typeText, "DermaDefault", 15, 55, Color(150, 150, 150))
-            
-            -- Показать очки подкрепления для ивентовых карт
-            if not map_data.is_main and map_data.reinforcement_points then
-                draw.SimpleText("Очки подкрепления: " .. map_data.reinforcement_points, "DermaDefault", 15, 75, Color(255, 200, 100))
-            end
-            
-            if game.GetMap() == map_name then
-                draw.SimpleText("ТЕКУЩАЯ", "DermaDefault", w - 15, h/2, Color(0, 255, 0), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-            end
-        end)
-        
-        -- Кнопка смены карты
-        local changeBtn = vgui.Create("PawsUI.Button", mapPanel)
-        changeBtn:SetLabel(game.GetMap() == map_name and "Текущая" or "Сменить")
-        changeBtn:SetSize(80, 30)
-        changeBtn:SetPos(mapPanel:GetWide() - 95, 35)
-        
-        if game.GetMap() == map_name then
-            changeBtn:SetEnabled(false)
-        else
-            changeBtn.DoClick = function()
-                print("[AutoEvents] Клик по кнопке смены карты: " .. map_name)
-                
-                NextRP:QuerryText(QUERY_MAT_QUESTION, NextRP.Style.Theme.Accent,
-                    'Сменить карту на "' .. map_data.name .. '"?\n\nСмена произойдет через ' .. NextRP.AutoEvents.Config.Settings.change_delay .. ' секунд.',
-                    '',
-                    'Да', function()
-                        print("[AutoEvents] Выполнение команды смены карты")
-                        RunConsoleCommand("autoevents_changemap", map_name)
-                        frame:Remove()
-                    end,
-                    'Нет', nil)
-            end
-        end
-        
-        mapsScroll:Add(mapPanel)
-    end
-    
-    tabPanel:AddSheet("Карты", mapsPanel, "icon16/map.png")
-    
-    -- Вкладка расписания
-    local schedulePanel = vgui.Create("DPanel", tabPanel)
-    schedulePanel:SetBackgroundColor(Color(35, 35, 40))
-    
-    local scheduleScroll = vgui.Create("PawsUI.ScrollPanel", schedulePanel)
-    scheduleScroll:Dock(FILL)
-    scheduleScroll:DockMargin(5, 5, 5, 5)
-    
-    -- Заголовок расписания с информацией об отсчете
-    local scheduleHeader = vgui.Create("PawsUI.Panel")
-    scheduleHeader:SetTall(60)
-    scheduleHeader:Stick(TOP, 5)
-    scheduleHeader:Background(Color(60, 60, 65, 200))
-    
-    scheduleHeader:On('Paint', function(s, w, h)
-        draw.SimpleText("Расписание автоматических ивентов", "DermaDefaultBold", w/2, 15, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        
-        -- Показать текущее время с поправкой
-        local server_time = NextRP.AutoEvents.GetServerTime()
-        local time_text = "Серверное время: " .. string.format("%02d:%02d", server_time.hour, server_time.minute)
-        if NextRP.AutoEvents.ServerTime.timezone_offset ~= 0 then
-            time_text = time_text .. " (UTC" .. (NextRP.AutoEvents.ServerTime.timezone_offset >= 0 and "+" or "") .. NextRP.AutoEvents.ServerTime.timezone_offset .. ")"
-        end
-        
-        if NextRP.AutoEvents.HUD.schedule_countdown_active then
-            local timeLeft = math.max(0, NextRP.AutoEvents.HUD.schedule_countdown_time_left)
-            local hours = math.floor(timeLeft / 3600)
-            local minutes = math.floor((timeLeft % 3600) / 60)
-            local countdownText = "Следующий: " .. NextRP.AutoEvents.HUD.schedule_countdown_event_name .. 
-                                " через " .. string.format("%02d:%02d", hours, minutes)
-            draw.SimpleText(countdownText, "DermaDefault", w/2, 35, Color(100, 200, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            draw.SimpleText(time_text, "DermaDefault", w/2, 50, Color(200, 200, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        else
-            draw.SimpleText("Автоматический отсчет отключен", "DermaDefault", w/2, 35, Color(200, 200, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            draw.SimpleText(time_text, "DermaDefault", w/2, 50, Color(200, 200, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        end
-    end)
-    
-    scheduleScroll:Add(scheduleHeader)
-    
-    -- Сортируем расписание по времени
-    local sorted_schedule = {}
-    for k, v in pairs(NextRP.AutoEvents.Config.Schedule) do
-        table.insert(sorted_schedule, v)
-    end
-    
-    table.sort(sorted_schedule, function(a, b)
-        return (a.hour * 60 + a.minute) < (b.hour * 60 + b.minute)
-    end)
-    
-    for _, schedule_item in pairs(sorted_schedule) do
-        local scheduleItemPanel = vgui.Create("PawsUI.Panel")
-        scheduleItemPanel:SetTall(60)
-        scheduleItemPanel:Stick(TOP, 3)
-        scheduleItemPanel:Background(Color(45, 45, 50, 200))
-        
-        scheduleItemPanel:On('Paint', function(s, w, h)
-            local time_str = string.format("%02d:%02d", schedule_item.hour, schedule_item.minute)
-            local map_data = NextRP.AutoEvents.Config.Maps[schedule_item.map]
-            
-            -- Подсветка следующего ивента
-            local textColor = Color(255, 255, 255)
-            if NextRP.AutoEvents.HUD.schedule_countdown_active and 
-               schedule_item.name == NextRP.AutoEvents.HUD.schedule_countdown_event_name then
-                textColor = Color(100, 200, 255)
-                draw.RoundedBox(4, 0, 0, w, h, Color(20, 40, 60, 100))
-            end
-            
-            draw.SimpleText(time_str, "DermaLarge", 15, 15, Color(100, 200, 255))
-            draw.SimpleText(schedule_item.name, "DermaDefault", 80, 15, textColor)
-            
-            if map_data then
-                draw.SimpleText(map_data.name .. " (" .. schedule_item.map .. ")", "DermaDefault", 80, 35, Color(180, 180, 180))
-            else
-                draw.SimpleText("Карта не найдена: " .. schedule_item.map, "DermaDefault", 80, 35, Color(255, 100, 100))
-            end
-        end)
-        
-        scheduleScroll:Add(scheduleItemPanel)
-    end
-    
-    tabPanel:AddSheet("Расписание", schedulePanel, "icon16/time.png")
-    
-    -- Панель управления внизу
+    -- Контрольные кнопки
     local controlPanel = vgui.Create("PawsUI.Panel", frame)
     controlPanel:SetTall(50)
-    controlPanel:Dock(BOTTOM)
+    controlPanel:Dock(TOP)
     controlPanel:DockMargin(10, 0, 10, 10)
-    controlPanel:Background(Color(30, 30, 35, 200))
+    controlPanel:Background(Color(0, 0, 0, 0))
     
     local startBtn = vgui.Create("PawsUI.Button", controlPanel)
-    startBtn:SetLabel("Запустить ивент")
-    startBtn:SetSize(110, 35)
+    startBtn:SetLabel("Запустить")
+    startBtn:SetSize(80, 35)
     startBtn:SetPos(10, 7)
     startBtn.DoClick = function()
-        print("[AutoEvents] Клик по кнопке запуска ивента")
         RunConsoleCommand("autoevents_start")
         LocalPlayer():ChatPrint("[AutoEvents] Команда запуска отправлена")
     end
     
     local stopBtn = vgui.Create("PawsUI.Button", controlPanel)
-    stopBtn:SetLabel("Остановить ивент")
-    stopBtn:SetSize(110, 35)
-    stopBtn:SetPos(130, 7)
+    stopBtn:SetLabel("Остановить")
+    stopBtn:SetSize(80, 35)
+    stopBtn:SetPos(100, 7)
     stopBtn.DoClick = function()
-        print("[AutoEvents] Клик по кнопке остановки ивента")
         RunConsoleCommand("autoevents_stop")
         LocalPlayer():ChatPrint("[AutoEvents] Команда остановки отправлена")
     end
@@ -555,31 +323,6 @@ function NextRP.AutoEvents.OpenAdminPanel()
         print("[AutoEvents] Клик по кнопке информации")
         RunConsoleCommand("autoevents_info")
     end
-    
-    -- Статус в правом углу
-    local statusPanel = vgui.Create("PawsUI.Panel", controlPanel)
-    statusPanel:SetWide(80)
-    statusPanel:Dock(RIGHT)
-    statusPanel:DockMargin(10, 7, 10, 7)
-    statusPanel:Background(Color(0, 0, 0, 0))
-    
-    statusPanel:On('Paint', function(s, w, h)
-        local statusText = "Готов"
-        local statusColor = Color(100, 100, 100)
-        
-        if NextRP.AutoEvents.HUD.schedule_countdown_active then
-            statusText = "Отсчет"
-            statusColor = Color(100, 200, 255)
-        elseif NextRP.AutoEvents.HUD.preparation_active then
-            statusText = "Подготовка"
-            statusColor = Color(255, 165, 0)
-        elseif NextRP.AutoEvents.HUD.active then
-            statusText = "Активен"
-            statusColor = Color(0, 255, 0)
-        end
-        
-        draw.SimpleText(statusText, "DermaDefault", w/2, h/2, statusColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-    end)
 end
 
 -- Простая функция быстрой смены карты
@@ -594,169 +337,40 @@ function NextRP.AutoEvents.QuickMapChange()
     frame:SetSize(400, 300)
     frame:Center()
     frame:MakePopup()
-    frame:ShowSettingsButton(false)
     
-    local scrollPanel = vgui.Create("PawsUI.ScrollPanel", frame)
+    local scrollPanel = vgui.Create("DScrollPanel", frame)
     scrollPanel:Dock(FILL)
     scrollPanel:DockMargin(10, 10, 10, 10)
     
-    for map_name, map_data in pairs(NextRP.AutoEvents.Config.Maps) do
+    for map_name, map_data in pairs(NextRP.AutoEvents.Config.Maps or {}) do
+        if map_data.is_main then continue end
+        
         local mapBtn = vgui.Create("PawsUI.Button")
-        mapBtn:SetLabel("")
-        mapBtn:SetTall(50)
-        mapBtn:Stick(TOP, 5)
-        mapBtn:Background(game.GetMap() == map_name and Color(60, 120, 60, 200) or Color(45, 45, 50, 200))
-        mapBtn:FadeHover(Color(80, 80, 85, 200))
-        
-        mapBtn:On('Paint', function(s, w, h)
-            local textColor = game.GetMap() == map_name and Color(200, 255, 200) or Color(255, 255, 255)
-            draw.SimpleText(map_data.name, "DermaDefaultBold", 15, h/2 - 8, textColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-            
-            local statusText = game.GetMap() == map_name and "ТЕКУЩАЯ" or "Сменить →"
-            draw.SimpleText(statusText, "DermaDefault", w - 15, h/2 + 8, textColor, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-        end)
-        
-        if game.GetMap() ~= map_name then
-            mapBtn.DoClick = function()
-                NextRP:QuerryText(QUERY_MAT_QUESTION, NextRP.Style.Theme.Accent,
-                    'Быстрая смена на "' .. map_data.name .. '"?',
-                    '',
-                    'Да', function()
-                        RunConsoleCommand("autoevents_changemap", map_name)
-                        frame:Remove()
-                    end,
-                    'Нет', nil)
-            end
+        mapBtn:SetText(map_data.name .. " (" .. map_name .. ")")
+        mapBtn:SetTall(40)
+        mapBtn:Dock(TOP)
+        mapBtn:DockMargin(0, 0, 0, 5)
+        mapBtn.DoClick = function()
+            Derma_Query("Сменить карту на " .. map_data.name .. "?", 
+                "Подтверждение", 
+                "Да", function()
+                    RunConsoleCommand("autoevents_changemap", map_name)
+                    frame:Remove()
+                end,
+                "Нет", nil)
         end
         
         scrollPanel:Add(mapBtn)
     end
 end
 
-function NextRP.AutoEvents.DrawDefenseHUD()
-    if not NextRP.AutoEvents.Data.event_active or NextRP.AutoEvents.Data.current_mode ~= "defense" then 
-        return 
-    end
-    
-    local scrW, scrH = ScrW(), ScrH()
-    local panelW, panelH = 400, 120
-    local x, y = scrW - panelW - 20, 20
-    
-    -- Фон панели
-    draw.RoundedBox(8, x, y, panelW, panelH, Color(0, 0, 0, 180))
-    draw.RoundedBox(8, x + 2, y + 2, panelW - 4, panelH - 4, Color(30, 30, 50, 200))
-    
-    -- Заголовок
-    draw.SimpleText("РЕЖИМ ОБОРОНЫ", "DermaDefaultBold", x + panelW/2, y + 12, Color(255, 255, 255), TEXT_ALIGN_CENTER)
-    
-    -- Получаем данные времени
-    local remaining_time, total_time, progress = NextRP.AutoEvents.GetDefenseTimeProgress()
-    
-    -- Таймер обратного отсчета
-    local minutes = math.floor(remaining_time / 60)
-    local seconds = math.floor(remaining_time % 60)
-    local time_text = string.format("%02d:%02d", minutes, seconds)
-    
-    local time_color = Color(255, 255, 255)
-    if remaining_time <= 60 then
-        time_color = Color(255, 100, 100) -- Красный если меньше минуты
-    elseif remaining_time <= 300 then
-        time_color = Color(255, 200, 100) -- Оранжевый если меньше 5 минут
-    end
-    
-    draw.SimpleText("Время до победы:", "DermaDefault", x + 10, y + 35, Color(200, 200, 200))
-    draw.SimpleText(time_text, "DermaLarge", x + panelW - 10, y + 32, time_color, TEXT_ALIGN_RIGHT)
-    
-    -- Прогресс-бар времени
-    local bar_x, bar_y = x + 10, y + 55
-    local bar_w, bar_h = panelW - 20, 12
-    
-    -- Фон прогресс-бара
-    draw.RoundedBox(4, bar_x, bar_y, bar_w, bar_h, Color(100, 100, 100, 150))
-    
-    -- Заполнение прогресс-бара (зеленый = прогресс к победе)
-    local fill_w = (progress / 100) * bar_w
-    local bar_color = Color(100, 255, 100) -- Зеленый
-    if progress > 80 then
-        bar_color = Color(255, 255, 100) -- Желтый ближе к концу
-    end
-    draw.RoundedBox(4, bar_x, bar_y, fill_w, bar_h, bar_color)
-    
-    -- Процент прогресса
-    draw.SimpleText(math.floor(progress) .. "%", "DermaDefault", bar_x + bar_w/2, bar_y + bar_h/2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-    
-    -- Очки подкрепления
-    local reinforcements_color = Color(100, 255, 100)
-    if NextRP.AutoEvents.Data.reinforcements <= 10 then
-        reinforcements_color = Color(255, 100, 100) -- Красный если мало
-    elseif NextRP.AutoEvents.Data.reinforcements <= 25 then
-        reinforcements_color = Color(255, 200, 100) -- Оранжевый
-    end
-    
-    draw.SimpleText("Подкрепления:", "DermaDefault", x + 10, y + 75, Color(200, 200, 200))
-    draw.SimpleText(NextRP.AutoEvents.Data.reinforcements, "DermaDefaultBold", x + panelW - 10, y + 75, reinforcements_color, TEXT_ALIGN_RIGHT)
-    
-    -- Текущая волна
-    draw.SimpleText("Волна: " .. NextRP.AutoEvents.Data.current_wave, "DermaDefault", x + 10, y + 95, Color(200, 200, 200))
-    
-    -- Количество врагов
-    local enemy_count = #NextRP.AutoEvents.Data.spawned_npcs
-    local enemy_color = enemy_count > 10 and Color(255, 100, 100) or Color(255, 255, 255)
-    draw.SimpleText("Врагов: " .. enemy_count, "DermaDefault", x + panelW - 10, y + 95, enemy_color, TEXT_ALIGN_RIGHT)
-end
-
-function NextRP.AutoEvents.DrawHUD()
-    if not NextRP.AutoEvents.Config.HUD.enabled then return end
-    
-    local mode = NextRP.AutoEvents.Data.current_mode
-    
-    if mode == "defense" then
-        NextRP.AutoEvents.DrawDefenseHUD()
-    elseif mode == "capture" then
-        NextRP.AutoEvents.DrawCaptureHUD() -- Существующая функция
-    end
-end
-
-net.Receive("NextRP_AutoEvents_TimeData", function()
-    local remaining_time = net.ReadFloat()
-    local total_time = net.ReadFloat()
-    local progress = net.ReadFloat()
-    
-    -- Сохраняем данные для HUD
-    NextRP.AutoEvents.Data.remaining_time = remaining_time
-    NextRP.AutoEvents.Data.total_time = total_time
-    NextRP.AutoEvents.Data.time_progress = progress
-end)
-
--- Функция для получения прогресса времени на клиенте
-function NextRP.AutoEvents.GetDefenseTimeProgress()
-    return NextRP.AutoEvents.Data.remaining_time or 0,
-           NextRP.AutoEvents.Data.total_time or 1,
-           NextRP.AutoEvents.Data.time_progress or 0
-end
-
--- Консольные команды для открытия панелей
-concommand.Add("autoevents_menu", function()
-    print("[AutoEvents] Команда открытия меню")
-    NextRP.AutoEvents.OpenAdminPanel()
-end)
-
-concommand.Add("autoevents_quickchange", function()
-    print("[AutoEvents] Команда быстрой смены карты")
-    NextRP.AutoEvents.QuickMapChange()
-end)
-
+-- Консольные команды для интерфейса
 concommand.Add("autoevents_panel", function()
-    print("[AutoEvents] Альтернативная команда открытия панели")
     NextRP.AutoEvents.OpenAdminPanel()
 end)
 
-concommand.Add("ae_menu", function()
-    print("[AutoEvents] Короткая команда открытия меню")
-    NextRP.AutoEvents.OpenAdminPanel()
-end)
-
-concommand.Add("ae_change", function()
-    print("[AutoEvents] Короткая команда смены карты")
+concommand.Add("autoevents_mapchange", function()
     NextRP.AutoEvents.QuickMapChange()
 end)
+
+print("[AutoEvents] Клиентские функции загружены")
