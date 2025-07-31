@@ -5,105 +5,241 @@ if not NextRP.Generator:IsMapEnabled() then return end
 -- Клиентские переменные
 NextRP.Generator.FuelLevel = 100
 NextRP.Generator.PlayerCrystals = 0
-NextRP.Generator.IsMining = false
-NextRP.Generator.MiningProgress = 0
-NextRP.Generator.MiningStartTime = 0
-NextRP.Generator.MiningDuration = 0
-NextRP.Generator.MenuOpen = false
 
--- HUD элементы
+-- Получение обновлений уровня топлива
+net.Receive("Generator_UpdateFuel", function()
+    NextRP.Generator.FuelLevel = net.ReadFloat()
+    
+    -- Обновляем HUD если есть
+    if NextRP.Generator.UpdateHUD then
+        NextRP.Generator:UpdateHUD()
+    end
+end)
+
+-- Получение обновлений количества кристаллов игрока
+net.Receive("Generator_UpdatePlayerCrystals", function()
+    NextRP.Generator.PlayerCrystals = net.ReadInt(32)
+    
+    -- Обновляем HUD если есть
+    if NextRP.Generator.UpdateHUD then
+        NextRP.Generator:UpdateHUD()
+    end
+end)
+
+-- Получение обновлений количества кристаллов в жилах
+net.Receive("Generator_UpdateVeinCrystals", function()
+    local veinID = net.ReadInt(32)
+    local crystalAmount = net.ReadInt(32)
+    
+    -- Найдем соответствующую жилу и обновим её количество кристаллов
+    for _, ent in pairs(ents.FindByClass("nextrp_crystal_vein")) do
+        if IsValid(ent) and ent.VeinID == veinID then
+            ent:SetNWInt("CrystalAmount", crystalAmount)
+            break
+        end
+    end
+end)
+
+-- Открытие меню генератора
+net.Receive("Generator_OpenMenu", function()
+    NextRP.Generator:OpenMenu()
+end)
+
+-- Функция открытия меню
+function NextRP.Generator:OpenMenu()
+    if IsValid(NextRP.Generator.MenuPanel) then
+        NextRP.Generator.MenuPanel:Remove()
+    end
+    
+    local frame = vgui.Create("DFrame")
+    frame:SetSize(600, 400)
+    frame:Center()
+    frame:SetTitle("Управление генератором")
+    frame:SetVisible(true)
+    frame:SetDraggable(true)
+    frame:ShowCloseButton(true)
+    frame:MakePopup()
+    
+    NextRP.Generator.MenuPanel = frame
+    
+    -- Информация о генераторе
+    local infoPanel = vgui.Create("DPanel", frame)
+    infoPanel:SetPos(10, 30)
+    infoPanel:SetSize(580, 100)
+    infoPanel.Paint = function(self, w, h)
+        draw.RoundedBox(4, 0, 0, w, h, Color(50, 50, 50, 200))
+        
+        -- Заголовок
+        draw.SimpleText("Состояние генератора", "DermaLarge", w/2, 10, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+        
+        -- Уровень топлива
+        local fuelText = "Уровень топлива: " .. math.Round(NextRP.Generator.FuelLevel, 1) .. "%"
+        local fuelColor = Color(0, 255, 0)
+        if NextRP.Generator.FuelLevel <= 10 then
+            fuelColor = Color(255, 0, 0)
+        elseif NextRP.Generator.FuelLevel <= 25 then
+            fuelColor = Color(255, 255, 0)
+        end
+        
+        draw.SimpleText(fuelText, "DermaDefault", w/2, 40, fuelColor, TEXT_ALIGN_CENTER)
+        
+        -- Полоса топлива
+        local barW, barH = 400, 20
+        local barX, barY = w/2 - barW/2, 65
+        
+        draw.RoundedBox(4, barX, barY, barW, barH, Color(30, 30, 30))
+        
+        if NextRP.Generator.FuelLevel > 0 then
+            local fillWidth = (barW - 4) * (NextRP.Generator.FuelLevel / 100)
+            draw.RoundedBox(4, barX + 2, barY + 2, fillWidth, barH - 4, fuelColor)
+        end
+    end
+    
+    -- Информация о кристаллах игрока
+    local crystalPanel = vgui.Create("DPanel", frame)
+    crystalPanel:SetPos(10, 140)
+    crystalPanel:SetSize(580, 80)
+    crystalPanel.Paint = function(self, w, h)
+        draw.RoundedBox(4, 0, 0, w, h, Color(50, 50, 50, 200))
+        
+        -- Заголовок
+        draw.SimpleText("Ваши кристаллы", "DermaLarge", w/2, 10, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+        
+        -- Количество кристаллов
+        local crystalText = NextRP.Generator.PlayerCrystals .. "/" .. NextRP.Generator.Config.Crystals.MaxPlayerCrystals
+        local crystalColor = Color(100, 200, 255)
+        if NextRP.Generator.PlayerCrystals == 0 then
+            crystalColor = Color(255, 100, 100)
+        elseif NextRP.Generator.PlayerCrystals >= NextRP.Generator.Config.Crystals.MaxPlayerCrystals then
+            crystalColor = Color(255, 255, 100)
+        end
+        
+        draw.SimpleText("💎 " .. crystalText, "DermaDefault", w/2, 45, crystalColor, TEXT_ALIGN_CENTER)
+    end
+    
+    -- Кнопки управления
+    local buttonPanel = vgui.Create("DPanel", frame)
+    buttonPanel:SetPos(10, 230)
+    buttonPanel:SetSize(580, 160)
+    buttonPanel.Paint = function(self, w, h)
+        draw.RoundedBox(4, 0, 0, w, h, Color(50, 50, 50, 200))
+    end
+    
+    -- Кнопка заправки
+    local refuelBtn = vgui.Create("DButton", buttonPanel)
+    refuelBtn:SetText("Заправить генератор (1 кристалл)")
+    refuelBtn:SetPos(10, 10)
+    refuelBtn:SetSize(560, 30)
+    refuelBtn.DoClick = function()
+        -- Отправляем запрос на заправку
+        RunConsoleCommand("say", "/refuel")
+        frame:Close()
+    end
+    
+    -- Кнопка проверки статуса
+    local statusBtn = vgui.Create("DButton", buttonPanel)
+    statusBtn:SetText("Обновить информацию")
+    statusBtn:SetPos(10, 50)
+    statusBtn:SetSize(270, 30)
+    statusBtn.DoClick = function()
+        net.Start("Generator_RequestData")
+        net.SendToServer()
+    end
+    
+    -- Кнопка проверки кристаллов
+    local crystalsBtn = vgui.Create("DButton", buttonPanel)
+    crystalsBtn:SetText("Проверить кристаллы")
+    crystalsBtn:SetPos(300, 50)
+    crystalsBtn:SetSize(270, 30)
+    crystalsBtn.DoClick = function()
+        RunConsoleCommand("crystals")
+    end
+    
+    -- Информация о жилах
+    local veinInfo = vgui.Create("DLabel", buttonPanel)
+    veinInfo:SetPos(10, 90)
+    veinInfo:SetSize(560, 60)
+    veinInfo:SetText("Для добычи кристаллов найдите жилы на карте и нажмите E рядом с ними.\nВремя добычи: " .. NextRP.Generator.Config.Crystals.MiningTime .. " сек.\nВремя восстановления жилы: " .. math.floor(NextRP.Generator.Config.Crystals.RestoreTime / 60) .. " мин.")
+    veinInfo:SetWrap(true)
+    veinInfo:SetTextColor(Color(200, 200, 200))
+end
+
+-- HUD генератора
 local function DrawGeneratorHUD()
+    if not NextRP.Generator:IsMapEnabled() then return end
+    
     local scrW, scrH = ScrW(), ScrH()
-    local x, y = scrW - 250, 50
+    
+    -- Панель генератора
+    local panelW, panelH = 300, 120
+    local panelX, panelY = scrW - panelW - 20, 20
     
     -- Фон панели
-    draw.RoundedBox(8, x - 10, y - 10, 230, 80, Color(0, 0, 0, 150))
+    draw.RoundedBox(8, panelX, panelY, panelW, panelH, Color(0, 0, 0, 150))
+    draw.RoundedBox(8, panelX + 2, panelY + 2, panelW - 4, panelH - 4, Color(30, 30, 30, 200))
     
     -- Заголовок
-    draw.SimpleText("ГЕНЕРАТОР", "DermaLarge", x + 105, y, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+    draw.SimpleText("⚡ ГЕНЕРАТОР", "DermaLarge", panelX + panelW/2, panelY + 10, Color(255, 255, 255), TEXT_ALIGN_CENTER)
     
     -- Уровень топлива
+    local fuelText = "Заряд: " .. math.Round(NextRP.Generator.FuelLevel, 1) .. "%"
     local fuelColor = Color(0, 255, 0)
-    if NextRP.Generator.FuelLevel <= 20 then
+    if NextRP.Generator.FuelLevel <= 10 then
         fuelColor = Color(255, 0, 0)
-    elseif NextRP.Generator.FuelLevel <= 50 then
+    elseif NextRP.Generator.FuelLevel <= 25 then
         fuelColor = Color(255, 255, 0)
     end
     
-    draw.SimpleText("Топливо: " .. math.Round(NextRP.Generator.FuelLevel, 1) .. "%", "DermaDefault", x, y + 25, fuelColor)
+    draw.SimpleText(fuelText, "DermaDefault", panelX + panelW/2, panelY + 35, fuelColor, TEXT_ALIGN_CENTER)
     
-    -- Кристаллы
-    draw.SimpleText("Кристаллы: " .. NextRP.Generator.PlayerCrystals, "DermaDefault", x, y + 45, Color(0, 150, 255))
-end
-
-local function DrawMiningProgress()
-    if not NextRP.Generator.IsMining then return end
+    -- Полоса топлива
+    local barW, barH = panelW - 40, 15
+    local barX, barY = panelX + 20, panelY + 55
     
-    local progress = 0
-    if NextRP.Generator.MiningDuration > 0 then
-        progress = math.min((CurTime() - NextRP.Generator.MiningStartTime) / NextRP.Generator.MiningDuration, 1)
-    end
-    NextRP.Generator.MiningProgress = progress
+    draw.RoundedBox(4, barX, barY, barW, barH, Color(60, 60, 60))
     
-    -- Если прогресс завершен, но добыча все еще активна - останавливаем на клиенте
-    if progress >= 1 then
-        NextRP.Generator.IsMining = false
-        return
+    if NextRP.Generator.FuelLevel > 0 then
+        local fillWidth = (barW - 2) * (NextRP.Generator.FuelLevel / 100)
+        draw.RoundedBox(4, barX + 1, barY + 1, fillWidth, barH - 2, fuelColor)
     end
     
-    local scrW, scrH = ScrW(), ScrH()
-    local barW, barH = 350, 30
-    local x, y = scrW / 2 - barW / 2, scrH - 150
-    
-    -- Фон панели
-    draw.RoundedBox(8, x - 10, y - 20, barW + 20, barH + 40, Color(0, 0, 0, 200))
-    
-    -- Заголовок
-    draw.SimpleText("⛏️ ДОБЫЧА КРИСТАЛЛОВ", "DermaDefaultBold", scrW / 2, y - 5, Color(255, 255, 255), TEXT_ALIGN_CENTER)
-    
-    -- Фон прогресс-бара
-    draw.RoundedBox(4, x, y + 15, barW, barH, Color(40, 40, 40, 255))
-    
-    -- Полоса прогресса
-    local progressWidth = (barW - 4) * progress
-    if progressWidth > 0 then
-        -- Основная полоса
-        draw.RoundedBox(4, x + 2, y + 17, progressWidth, barH - 4, Color(0, 150, 255, 220))
-        
-        -- Блик на полосе
-        draw.RoundedBox(4, x + 2, y + 17, progressWidth, (barH - 4) / 3, Color(255, 255, 255, 80))
+    -- Количество кристаллов
+    local crystalText = "💎 Кристаллы: " .. NextRP.Generator.PlayerCrystals .. "/" .. NextRP.Generator.Config.Crystals.MaxPlayerCrystals
+    local crystalColor = Color(100, 200, 255)
+    if NextRP.Generator.PlayerCrystals == 0 then
+        crystalColor = Color(200, 200, 200)
     end
     
-    -- Процент в центре
-    draw.SimpleText(math.floor(progress * 100) .. "%", "DermaDefaultBold", scrW / 2, y + 30, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(crystalText, "DermaDefault", panelX + panelW/2, panelY + 80, crystalColor, TEXT_ALIGN_CENTER)
     
     -- Подсказка
-    draw.SimpleText("Зажмите E для продолжения добычи", "DermaDefault", scrW / 2, y + 55, Color(200, 200, 200), TEXT_ALIGN_CENTER)
+    draw.SimpleText("F4 -> Генератор для управления", "DermaDefaultBold", panelX + panelW/2, panelY + 100, Color(200, 200, 200), TEXT_ALIGN_CENTER)
 end
 
--- Сетевые функции
-net.Receive("Generator_UpdateFuel", function()
-    NextRP.Generator.FuelLevel = net.ReadFloat()
+-- Добавляем HUD
+hook.Add("HUDPaint", "GeneratorHUD", DrawGeneratorHUD)
+
+-- Функция обновления HUD
+function NextRP.Generator:UpdateHUD()
+    -- HUD обновляется автоматически через DrawGeneratorHUD
+end
+
+-- Запрос данных при подключении
+hook.Add("InitPostEntity", "Generator_RequestData", function()
+    timer.Simple(2, function()
+        if NextRP.Generator:IsMapEnabled() then
+            net.Start("Generator_RequestData")
+            net.SendToServer()
+        end
+    end)
 end)
 
-net.Receive("Generator_UpdatePlayerCrystals", function()
-    NextRP.Generator.PlayerCrystals = net.ReadInt(32)
+-- Команда открытия меню через F4
+hook.Add("ShowSpare2", "GeneratorMenu", function()
+    if NextRP.Generator:IsMapEnabled() then
+        NextRP.Generator:OpenMenu()
+        return true
+    end
 end)
 
-net.Receive("Generator_StartMining", function()
-    NextRP.Generator.IsMining = true
-    NextRP.Generator.MiningStartTime = CurTime()
-    NextRP.Generator.MiningDuration = net.ReadFloat()
-    NextRP.Generator.MiningProgress = 0
-end)
-
-net.Receive("Generator_StopMining", function()
-    NextRP.Generator.IsMining = false
-    NextRP.Generator.MiningProgress = 0
-end)
-
--- HUD хуки
-hook.Add("HUDPaint", "Generator_HUD", function()
-    DrawGeneratorHUD()
-    DrawMiningProgress()
-end)
+print("[Generator] Клиентская часть загружена")

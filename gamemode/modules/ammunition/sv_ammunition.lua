@@ -48,6 +48,17 @@ local function calcweight(pPlayer)
             pPlayer:SetSlowWalkSpeed(slowspeed)
         end
     end
+
+    if ServerMedicMod and ServerMedicMod.EnableLegsTraum and pPlayer:GetNWInt("MedicineModtraumalegs") != 0 then
+        -- Если есть травма ног, применяем дополнительное замедление на 70% (делим на 3)
+        local currentWalkSpeed = pPlayer:GetWalkSpeed()
+        local currentRunSpeed = pPlayer:GetRunSpeed()
+        local currentSlowSpeed = pPlayer:GetSlowWalkSpeed()
+        
+        pPlayer:SetWalkSpeed(currentWalkSpeed / 3)
+        pPlayer:SetRunSpeed(currentRunSpeed / 3)
+        pPlayer:SetSlowWalkSpeed(currentSlowSpeed / 3)
+    end
 end
 
 

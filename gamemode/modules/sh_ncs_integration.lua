@@ -1,169 +1,91 @@
--- gamemode/modules/money/sh_ncs_integration.lua
--- Интеграция NextRP денег с NCS_SHARED системой
+-- Добавить в начало lua/rdv_companions/sh_init.lua
+-- или создать новый файл lua/rdv_companions/sh_nextrp_integration.lua
 
--- Проверяем наличие NCS_SHARED
-if not NCS_SHARED then
-    print("[NextRP.Money] NCS_SHARED не найден, пропускаем интеграцию")
-    return
-end
-
--- Регистрируем валюту NextRP в системе NCS_SHARED
-NCS_SHARED.RegisterCurrency("nextrp", {
-    -- Функция добавления денег
-    addMoney = function(P, AMOUNT)
-        AMOUNT = tonumber(AMOUNT)
-        if not AMOUNT or AMOUNT == 0 then return end
-        
-        if IsValid(P) and P:IsPlayer() then
-            P:AddMoney(AMOUNT)
-            return true
-        end
-        return false
-    end,
-    
-    -- Функция проверки возможности трат
-    canAfford = function(P, AMOUNT)
-        AMOUNT = tonumber(AMOUNT)
-        if not AMOUNT or AMOUNT <= 0 then return false end
-        
-        if IsValid(P) and P:IsPlayer() then
-            return P:CanAfford(AMOUNT)
-        end
-        return false
-    end,
-    
-    -- Функция получения текущих денег
-    getMoney = function(P)
-        if IsValid(P) and P:IsPlayer() then
-            return P:GetMoney() or 0
-        end
-        return 0
-    end,
-    
-    -- Функция форматирования денег
-    formatMoney = function(AMOUNT)
-        AMOUNT = tonumber(AMOUNT) or 0
-        
-        -- Форматируем с разделителями тысяч и добавляем "CR"
-        local formatted = string.Comma(AMOUNT)
-        return formatted .. " CR"
-    end,
-    
-    -- Дополнительные функции для NextRP
-    
-    -- Функция траты денег (более безопасная чем просто addMoney с отрицательным значением)
-    takeMoney = function(P, AMOUNT)
-        AMOUNT = tonumber(AMOUNT)
-        if not AMOUNT or AMOUNT <= 0 then return false end
-        
-        if IsValid(P) and P:IsPlayer() then
-            if P:CanAfford(AMOUNT) then
-                P:AddMoney(-AMOUNT)
-                return true
-            end
-        end
-        return false
-    end,
-    
-    -- Функция установки денег
-    setMoney = function(P, AMOUNT)
-        AMOUNT = tonumber(AMOUNT)
-        if not AMOUNT or AMOUNT < 0 then return false end
-        
-        if IsValid(P) and P:IsPlayer() then
-            P:SetMoney(AMOUNT)
-            return true
-        end
-        return false
-    end,
-    
-    -- Функция получения названия валюты
-    getCurrencyName = function()
-        return "Кредиты (CR)"
-    end,
-    
-    -- Функция получения краткого названия валюты
-    getCurrencySymbol = function()
-        return "CR"
-    end
-})
-
--- Дополнительные хелперы для совместимости с другими системами
+-- Интеграция с NextRP Money System
 if SERVER then
-    -- Функция для админских команд через NCS
-    hook.Add("NCS_AdminGiveMoney", "NextRP_NCS_AdminGiveMoney", function(admin, target, amount)
-        if IsValid(admin) and admin:IsAdmin() and IsValid(target) and target:IsPlayer() then
-            target:AddMoney(amount)
-            admin:ChatPrint("Выдано " .. amount .. " CR игроку " .. target:Nick())
-            target:SendNotification('Администратор выдал вам ' .. amount .. ' CR!', 0, 5, NextRP.Style.Theme.Accent, NextRP.Style.Theme.Text)
-            return true
-        end
-        return false
-    end)
-    
-    -- Функция для покупок через NCS
-    hook.Add("NCS_ProcessPurchase", "NextRP_NCS_ProcessPurchase", function(player, itemPrice, itemName)
-        if IsValid(player) and player:IsPlayer() then
-            if player:CanAfford(itemPrice) then
-                player:AddMoney(-itemPrice)
-                player:SendNotification('Покупка "' .. itemName .. '" за ' .. itemPrice .. ' CR прошла успешно!', 0, 3, NextRP.Style.Theme.Accent, NextRP.Style.Theme.Text)
-                return true
-            else
-                player:SendNotification('У вас недостаточно кредитов для покупки "' .. itemName .. '"!', 0, 5, NextRP.Style.Theme.Accent, NextRP.Style.Theme.Text)
-                return false
+    -- Проверяем наличие NextRP системы денег
+    hook.Add("InitPostEntity", "RDV_COMPANIONS_NextRP_Integration", function()
+        timer.Simple(2, function() -- Даём время на загрузку всех модулей
+            if not NextRP or not NextRP.Chars then
+                print("[RDV COMPANIONS] ВНИМАНИЕ: NextRP не найден, аддон компаньонов может работать некорректно!")
+                return
             end
-        end
-        return false
+            
+            -- Проверяем наличие функций денег
+            local pMeta = FindMetaTable('Player')
+            if not pMeta.GetMoney or not pMeta.AddMoney or not pMeta.CanAfford then
+                print("[RDV COMPANIONS] ОШИБКА: NextRP Money система не найдена!")
+                return
+            end
+            
+            print("[RDV COMPANIONS] Успешная интеграция с NextRP Money System!")
+            
+            -- Отключаем NCS_SHARED если он используется для денег
+            if NCS_SHARED and NCS_SHARED.AddMoney then
+                -- Переопределяем функции NCS_SHARED для использования NextRP
+                local oldAddMoney = NCS_SHARED.AddMoney
+                local oldCanAfford = NCS_SHARED.CanAfford
+                
+                NCS_SHARED.AddMoney = function(P, currency, amount)
+                    if currency == nil and IsValid(P) and P:IsPlayer() then
+                        -- Используем NextRP систему
+                        return P:AddMoney(amount)
+                    else
+                        -- Используем старую систему для других валют
+                        return oldAddMoney(P, currency, amount)
+                    end
+                end
+                
+                NCS_SHARED.CanAfford = function(P, currency, amount)
+                    if currency == nil and IsValid(P) and P:IsPlayer() then
+                        -- Используем NextRP систему
+                        return P:CanAfford(amount)
+                    else
+                        -- Используем старую систему для других валют
+                        return oldCanAfford(P, currency, amount)
+                    end
+                end
+                
+                print("[RDV COMPANIONS] NCS_SHARED переопределён для использования NextRP Money!")
+            end
+        end)
     end)
 end
 
--- Регистрируем алиасы для совместимости
-if not NextRP.NCS then
-    NextRP.NCS = {}
+-- Клиентская часть интеграции
+if CLIENT then
+    hook.Add("InitPostEntity", "RDV_COMPANIONS_NextRP_Integration_Client", function()
+        timer.Simple(3, function()
+            -- Проверяем наличие NextRP HUD системы
+            if NextRP and NextRP.MoneyHUD then
+                print("[RDV COMPANIONS] Клиентская интеграция с NextRP Money HUD активна!")
+            end
+        end)
+    end)
     
-    -- Алиасы функций для более простого использования
-    NextRP.NCS.GiveMoney = function(player, amount)
-        return NCS_SHARED.GetCurrency("nextrp").addMoney(player, amount)
-    end
-    
-    NextRP.NCS.TakeMoney = function(player, amount)
-        return NCS_SHARED.GetCurrency("nextrp").takeMoney(player, amount)
-    end
-    
-    NextRP.NCS.CanAfford = function(player, amount)
-        return NCS_SHARED.GetCurrency("nextrp").canAfford(player, amount)
-    end
-    
-    NextRP.NCS.GetMoney = function(player)
-        return NCS_SHARED.GetCurrency("nextrp").getMoney(player)
-    end
-    
-    NextRP.NCS.FormatMoney = function(amount)
-        return NCS_SHARED.GetCurrency("nextrp").formatMoney(amount)
-    end
+    -- Хук для обновления отображения денег после покупок
+    hook.Add("RDV_COMPANIONS_MoneyChanged", "UpdateNextRPMoneyHUD", function()
+        if NextRP and NextRP.MoneyHUD and NextRP.MoneyHUD.ForceUpdate then
+            NextRP.MoneyHUD:ForceUpdate()
+        end
+    end)
 end
 
-print("[NextRP.Money] Интеграция с NCS_SHARED успешно загружена!")
-
--- Пример использования:
---[[
-    -- Получить деньги игрока
-    local money = NCS_SHARED.GetCurrency("nextrp").getMoney(player)
-    
-    -- Дать игроку деньги
-    NCS_SHARED.GetCurrency("nextrp").addMoney(player, 1000)
-    
-    -- Проверить может ли позволить
-    if NCS_SHARED.GetCurrency("nextrp").canAfford(player, 500) then
-        -- Забрать деньги
-        NCS_SHARED.GetCurrency("nextrp").takeMoney(player, 500)
-    end
-    
-    -- Форматировать деньги для отображения
-    local formatted = NCS_SHARED.GetCurrency("nextrp").formatMoney(1500) -- "1,500 CR"
-    
-    -- Или через алиасы NextRP:
-    NextRP.NCS.GiveMoney(player, 1000)
-    local canBuy = NextRP.NCS.CanAfford(player, 500)
-    local formatted = NextRP.NCS.FormatMoney(1500)
-]]
+-- Функция для логирования покупок (серверная)
+if SERVER then
+    hook.Add("RDV_COMPANIONS_CompanionPurchased", "LogCompanionPurchase", function(player, companionID, price)
+        if not IsValid(player) then return end
+        
+        local logMessage = string.format("[COMPANIONS PURCHASE] %s (%s) купил компаньона '%s' за %d CR", 
+            player:Nick(), 
+            player:SteamID(), 
+            companionID, 
+            price or 0
+        )
+        
+        print(logMessage)
+        
+        -- Можно добавить запись в файл логов или базу данных
+        -- file.Append("companions_purchases.log", logMessage .. "\n")
+    end)
+end

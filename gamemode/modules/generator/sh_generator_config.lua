@@ -1,5 +1,4 @@
--- Модуль генератора для военного объекта
--- gamemode/modules/generator/sh_config.lua
+-- gamemode/modules/generator/sh_generator_config.lua
 
 NextRP = NextRP or {}
 NextRP.Generator = NextRP.Generator or {}
@@ -9,13 +8,15 @@ NextRP.Generator.Config = {
     -- Карты на которых работает модуль
     EnabledMaps = {
         ["rp_dotrmm"] = true,
-        -- Добавьте нужные карты
+        ["rp_starwars_coruscant"] = true,
+        ["rp_starwars_venator"] = true,
+        ["rp_starwars_tatooine"] = true,
     },
     
     -- Настройки генератора
     Generator = {
         FuelCapacity = 100, -- Максимальный уровень топлива (100%)
-        FuelConsumption = 100, -- Расход топлива за минуту (2% в минуту)
+        FuelConsumption = 10, -- Расход топлива за минуту (2% в минуту) - ИСПРАВЛЕНО
         Position = Vector(0, 0, 0), -- Дефолтная позиция (переопределяется для каждой карты)
         Model = "models/props_c17/substation_stripebox01a.mdl", -- Модель генератора
         ButtonText = "Нажмите E для заправки генератора",
@@ -34,7 +35,7 @@ NextRP.Generator.Config = {
         VeinModel = "models/props_junk/rock001a.mdl", -- Модель жилы
         VeinHealth = 150, -- Здоровье жилы
         CrystalDropAmount = {2, 5}, -- Минимум и максимум кристаллов за добычу
-        RestoreTime = 10, -- Время восстановления жилы (7 минут)
+        RestoreTime = 420, -- Время восстановления жилы (7 минут) - ИСПРАВЛЕНО
         MiningTime = 8, -- Время добычи (8 секунд)
         MaxPlayerCrystals = 50, -- Максимальное количество кристаллов у игрока
         MiningCooldown = 2, -- Кулдаун между добычами (2 секунды)
@@ -53,6 +54,8 @@ NextRP.Generator.Config = {
         MiningStarted = "⛏️ Добыча кристаллов начата...",
         MiningCompleted = "💎 Вы добыли %d кристаллов!",
         CrystalsFull = "❌ У вас максимальное количество кристаллов! (%d/%d)",
+        VeinEmpty = "❌ В жиле нет кристаллов! Ждите восстановления.",
+        VeinBeingMined = "❌ Эта жила уже добывается другим игроком!",
     },
     
     -- Настройки звуков (опционально)
@@ -68,16 +71,11 @@ NextRP.Generator.Config = {
 NextRP.Generator.MapConfigs = {
     ["rp_dotrmm"] = {
         Generator = {
-            Position = Vector(4814.275391, 3536.403809, -13873.968750),
+            Position = Vector(9957.218750, 9600.541992, -13928.968750),
             LightButtonName = "light_switch_kamino",
         },
         Crystals = {
             Veins = {
-                Vector(500, 500, 50),
-                Vector(-500, 800, 50),
-                Vector(1500, -200, 50),
-                Vector(800, 1200, 50),
-                Vector(-200, -300, 50),
             }
         }
     },
@@ -123,40 +121,31 @@ NextRP.Generator.MapConfigs = {
         },
         Crystals = {
             Veins = {
-                Vector(2500, -500, 50),
-                Vector(3500, -1500, 50),
-                Vector(2800, -800, 50),
-                Vector(3200, -1200, 50),
-                Vector(2600, -1400, 50),
+                Vector(2500, -800, 50),
+                Vector(3500, -1200, 50),
+                Vector(2700, -1500, 50),
+                Vector(3200, -600, 50),
+                Vector(2800, -1100, 50),
+                Vector(3400, -900, 50),
             }
         }
     },
-    
-    ["rp_starwars_naboo"] = {
-        Generator = {
-            Position = Vector(-1000, -2000, 150),
-            LightButtonName = "naboo_light_control",
-        },
-        Crystals = {
-            Veins = {
-                Vector(-800, -1500, 100),
-                Vector(-1200, -2500, 100),
-                Vector(-600, -1800, 100),
-                Vector(-1400, -2200, 100),
-                Vector(-1000, -1600, 100),
-                Vector(-1000, -2400, 100),
-            }
-        }
-    }
 }
 
--- Общие функции
+-- Функции модуля
 function NextRP.Generator:IsMapEnabled()
     local currentMap = game.GetMap()
-    return self.Config.EnabledMaps[currentMap] or false
+    return self.Config.EnabledMaps[currentMap] == true
 end
 
 function NextRP.Generator:GetMapConfig()
     local currentMap = game.GetMap()
     return self.MapConfigs[currentMap] or {}
+end
+
+-- Проверяем включен ли модуль на текущей карте
+if NextRP.Generator:IsMapEnabled() then
+    print("[Generator] Модуль генератора активирован для карты: " .. game.GetMap())
+else
+    print("[Generator] Модуль генератора отключен для карты: " .. game.GetMap())
 end

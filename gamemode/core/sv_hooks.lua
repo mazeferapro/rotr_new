@@ -18,6 +18,11 @@ hook.Add("EntityEmitSound", "ReduceAllSoundsExceptVoice", function(soundData)
     return true
 end)
 
+hook.Add("PlayerCanHearPlayersVoice", "LimitVoiceDistance", function(listener, talker)
+    return listener:GetPos():Distance(talker:GetPos()) <= 800, true
+end)
+
+
 hook.Add("EntityNetworkedVarChanged", "NextRP_MoneyHUDSync", function(ent, name, oldval, newval)
     if not IsValid(ent) or not ent:IsPlayer() then return end
     if name ~= "nrp_money" then return end
