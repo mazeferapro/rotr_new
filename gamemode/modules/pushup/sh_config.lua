@@ -21,7 +21,7 @@ NextRP.PushupGame.Config = {
     moneyPerPushup = 50,
     
     -- Опыт за каждое отжимание
-    expPerPushup = 2,
+    expPerPushup = 200,
     
     -- Минимальный уровень для игры
     minLevel = 1,

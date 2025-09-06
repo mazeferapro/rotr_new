@@ -21,10 +21,16 @@ Config = {
             requirement = function() return true end,
         },
         {
-                name = "Таланты",
-                imgur = "vkZG4pZ",
-                func = function() RunConsoleCommand('say', '/talents') end,
-                requirement = function() return true end,
+            name = "Таланты",
+            imgur = "vkZG4pZ",
+            func = function() RunConsoleCommand('say', '/talents') end,
+            requirement = function() return true end,
+        },
+        {
+            name = "Настройки интерфейса",
+            imgur = "WToD4Bg",
+            func = function() NextRPSetOpenUI() end,
+            requirement = function() return true end,
         },
         {
             name = "Стандартное меню",
@@ -228,7 +234,12 @@ Config = {
             func = function() NextRP.ControlPoints:OpenCPList() end,
             requirement = function() return true end,
         },
-        
+                {
+            name = "LSCS",
+            imgur = "WToD4Bg",
+            func = function() RunConsoleCommand('lscs_openmenu') end,
+            requirement = function() return true end,
+        },
         {
             name = "LVS",
             imgur = "JJVGTh9",
@@ -273,7 +284,7 @@ Config = {
             imgur = "VvVcWVT",
             func = function() chat.AddText(NextRP.Config.Link.VK..'\n'..NextRP.Config.Link.Discord..'\n'..NextRP.Config.Link.SteamCollection) end,
             requirement = function() return true end,
-        },
+        }
     }
 }
 
@@ -287,6 +298,8 @@ function ContextMenu:Create(sTable)
     self.Radial:SetTitle("Меню")
     self.Radial:SetPrimaryColor(Color(40, 40, 40, 200))
     self.Radial:SetBackgroundColor(Color(40, 40, 40, 150)) -- ФОН
+    --self.Radial:SetWorldClicker( true )
+    --gui.EnableScreenClicker(true)
 
     for k, v in ipairs(sTable) do
         if not v.requirement() then continue end
@@ -303,6 +316,8 @@ function ContextMenu:Create(sTable)
     function ContextMenu.Radial:Think()
         local keyDown = input.IsKeyDown(KEY_C)
         if keyDown then return end
+        --gui.EnableScreenClicker(false)
+        --self:GetParent():SetWorldClicker(true)
         self:Close()
     end
 end

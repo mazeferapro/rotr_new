@@ -2634,18 +2634,18 @@ NextRP.AutoEvents.Config = {
     Schedule = {
         {
             name = "Оборона (Майгито)",
-            hour = 15,
+            hour = 02,
             minute = 00,
             map = "[event]_mygeeto_clswrp"
         },
         {
-            name = "Оборона (Майгито)",
-            hour = 18,
+            name = "Захват (Геонозис)",
+            hour = 20,
             minute = 00,
             map = "geonosis"
         },
         {
-            name = "Оборона (Майгито)",
+            name = "Оборона (Кристовсис)",
             hour = 21,
             minute = 00,
             map = "event_christophsis_tgc"

@@ -121,7 +121,7 @@ function SWEP:DoAttack(dmg)
 
     local ent = self:GetOwner():GetEyeTrace().Entity
 
-    if not IsValid(ent) then return end
+    if not IsValid(ent) or ent:GetPos():Distance(self:GetOwner():GetPos()) > 100 then return end
     if ent:IsPlayer() and not ent:Alive() then return end
 
 --[[    if not ent:isDoor() then

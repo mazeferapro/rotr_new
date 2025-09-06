@@ -963,6 +963,33 @@ local function DrawTargetInfo()
 end
 
 -- Main HUD drawing function
+
+local PlayerHide = {
+    {
+        title = 'Dhelm',
+        func = DrawHelmetOverlay,
+    },
+    {
+        title = 'Dcomps',
+        func = DrawCompass,
+    },
+    {
+        title = 'Dhud',
+        func = DrawPlayerHUD,
+    },
+    {
+        title = 'Dwep',
+        func = DrawWeapon,
+    },
+    {
+        title = 'Ddmg',
+        func = DrawDamageNumbers,
+    },
+    {
+        title = 'Dtrgt',
+        func = DrawTargetInfo,
+    }
+}
 local function DrawHUD()
     local player = LocalPlayer()
     if not player:Alive() then return end
@@ -973,14 +1000,33 @@ local function DrawHUD()
     end
     
     -- Draw helmet overlay first (if helmet is on)
-    DrawHelmetOverlay()
     
+    --[[for _, v in ipairs(PlayerHide) do
+        if !player:GetNWBool(v.title) then
+            print(v.title)
+            v.func()
+        end
+    end]]--
+
     -- Draw HUD elements - position changes based on helmet state
-    DrawCompass()
-    DrawPlayerHUD()
-    DrawWeapon()
-    DrawDamageNumbers()
-    DrawTargetInfo()
+    if !player:GetNWBool('Dhelm') then
+        DrawHelmetOverlay()
+    end
+    if !player:GetNWBool('Dcomps') then
+        DrawCompass()
+    end
+    if !player:GetNWBool('Dhud') then
+        DrawPlayerHUD()
+    end
+    if !player:GetNWBool('Dwep') then
+        DrawWeapon()
+    end
+    if !player:GetNWBool('Ddmg') then
+        DrawDamageNumbers()
+    end
+    if !player:GetNWBool('Dtrgt') then
+        DrawTargetInfo()
+    end
 end
 
 -- Register hit network receiver

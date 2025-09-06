@@ -56,15 +56,15 @@ local usergroups = CAMI.GetUsergroups and CAMI.GetUsergroups() or {
     },
     admin = {
         Name = "admin",
-        Inherits = "moderator"
+        Inherits = "user"
     },
     superadmin = {
         Name = "superadmin",
-        Inherits = "admin"
+        Inherits = "eventmanager"
     },
     eventmanager = {
         Name = "eventmanager",
-        Inherits = "moderator"
+        Inherits = "admin"
     }
 }
 
@@ -221,6 +221,7 @@ local defaultAccessHandler = {["CAMI.PlayerHasAccess"] =
             not extraInfoTbl.Fallback and actorPly:IsAdmin() or
             extraInfoTbl.Fallback == "user" and true or
             extraInfoTbl.Fallback == "admin" and actorPly:IsAdmin() or
+            extraInfoTbl.Fallback == "eventmanager" and actorPly:IsAdmin() or
             extraInfoTbl.Fallback == "superadmin" and actorPly:IsSuperAdmin())
 
 
@@ -229,7 +230,8 @@ local defaultAccessHandler = {["CAMI.PlayerHasAccess"] =
         local hasAccess =
             priv.MinAccess == "user" or
             priv.MinAccess == "admin" and NextRP.Utils:IsAdmin(actorPly) or
-            priv.MinAccess == "superadmin" and actorPly:IsSuperAdmin()
+            priv.MinAccess ==  "eventmanager" and NextRP.Utils:IsAdmin(actorPly) or
+            priv.MinAccess == "superadmin" and NextRP.Utils:IsSuperAdmin()
 
         if hasAccess and priv.HasAccess then
             hasAccess = priv:HasAccess(actorPly, targetPly)

@@ -196,25 +196,6 @@ function NextRP.AutoEvents.StartVictoryCheck()
     end)
 end
 
-function NextRP.AutoEvents.StartVictoryCheck()
-    -- Удаляем старый таймер если есть
-    if NextRP.AutoEvents.Data.victory_check_timer then
-        timer.Remove(NextRP.AutoEvents.Data.victory_check_timer)
-    end
-    
-    local timer_name = "AutoEvents_VictoryCheck_" .. os.time()
-    NextRP.AutoEvents.Data.victory_check_timer = timer_name
-    
-    timer.Create(timer_name, 1, 0, function()
-        if not NextRP.AutoEvents.Data.event_active then
-            timer.Remove(timer_name)
-            return
-        end
-        
-        NextRP.AutoEvents.CheckDefenseVictory()
-    end)
-end
-
 function NextRP.AutoEvents.EndDefenseEvent(victory, message)
     NextRP.AutoEvents.Data.event_active = false
     
@@ -908,6 +889,7 @@ function NextRP.AutoEvents.EndEvent(success, message)
 
                 ply:ChatPrint("[AutoEvents] Вы получили награду за победу!")
                 NextRP.Progression:AddXP(ply, map_data.reward_xp)
+                ply:AddMoney(map_data.reward_xp/2 or 1000)
             end
         end
     end

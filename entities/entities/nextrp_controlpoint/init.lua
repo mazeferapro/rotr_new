@@ -27,6 +27,7 @@ function ENT:Initialize()
 
 	self.NextPoint = CurTime()
 	self.OldControl = -1
+	self:SetBodygroup(1, 2)
 end
 
 local npcTable = {
@@ -153,7 +154,7 @@ function ENT:ClearPoints()
 end
 
 function ENT:OnCaptured(sName, nOld, nNew)
-	--[[if nNew == CONTROL_GAR then
+	if nNew == CONTROL_GAR then
         self:SetBodygroup(1, 0)
         self:SetLastCaptured(CurTime())
     elseif nNew == CONTROL_CIS or nNew == CONTROL_NATO then
@@ -162,9 +163,9 @@ function ENT:OnCaptured(sName, nOld, nNew)
 	else
 		self:SetBodygroup(1, 2)
 		self:SetLastCaptured(CurTime())
-	end]]--
-	self:SetBodygroup(1, 2)
-	self:SetLastCaptured(CurTime())
+	end
+	--self:SetBodygroup(1, 2)
+	--self:SetLastCaptured(CurTime())
 
 	if nNew ~= -1 then
 		self:EmitSound('POINT_CAPTURED')

@@ -7,6 +7,7 @@ local pMeta = FindMetaTable('Player')
 -- @tparam number character_id ID персонажа
 -- @treturn table|boolean Таблица персонажа, или `false` если персонаж не найден.
 function pMeta:CharacterByID(character_id)
+    if not istable(self.Characters) then return false end
     for i, char in pairs(self.Characters) do
         if char.character_id == character_id then
             return char

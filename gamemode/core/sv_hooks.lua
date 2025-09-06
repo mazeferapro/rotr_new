@@ -5,6 +5,8 @@ NextRP.Chars.Cache = NextRP.Chars.Cache or {}
 local katarnTable = {
 	['Республиканский коммандос'] = true,
 	['Республиканский коммандос Wrecker'] = true,
+	['Республиканский коммандос Дельта'] = true,
+	['Республиканский коммандос 44-го'] = true,
 }
 
 hook.Add("EntityEmitSound", "ReduceAllSoundsExceptVoice", function(soundData)
@@ -39,8 +41,9 @@ print("[NextRP.Money] Серверная часть HUD уведомлений �
 
 -- Этот хук срабатывает, когда игрок заходит на сервер
 hook.Add("PlayerInitialSpawn", "SetPlayerLerp", function(ply)
-    -- Команда для установки Lerp (команда cl_interp в Garry's Mod)
-    if ply:SteamID64() == 'STEAM_0:0:54343242' then ply:SendLua([[RunConsoleCommand("cl_interp", "0.15")]]) else ply:SendLua([[RunConsoleCommand("cl_interp", "0.15")]]) end
+	timer.Simple(3, function()
+    	print(ply:Ping()..ply:Nick()) local png = ply:Ping()/2000 or 0.05 if ply:SteamID64() == 'STEAM_0:1:127564031' then ply:SendLua('RunConsoleCommand("cl_interp", "'..tostring(png)..'")') else ply:SendLua('RunConsoleCommand("cl_interp", "'..tostring(png)..'")') end
+    end)
 end)
 
 hook.Add("PlayerDeath", "NecronRespawn", function(victim, inflictor, attacker)
@@ -112,7 +115,8 @@ end)
 function GM:PlayerSpawn( pPlayer )
     hook.Call( 'PlayerLoadout', GAMEMODE, pPlayer )
 	hook.Call( 'PlayerSelectSpawn', self, pPlayer )
-	
+	local sPath = 'kitsune/psettings/'..pPlayer:SteamID64()..'.txt'
+	local dPath = file.Exists(sPath,'DATA')
 
     player_manager.SetPlayerClass(pPlayer, team.playerClass or 'player_nextrp')
 
@@ -138,7 +142,8 @@ function GM:PlayerSpawn( pPlayer )
 
     --KitsuneBPRetriveData(pPlayer)
     if pPlayer:SteamID() == 'STEAM_0:0:54343242' then KitsuneDaylyReward(pPlayer) end
-    if timer.Exists('ArrestTimeFor'..pPlayer:SteamID64()) then pPlayer:SetPos(Vector(-7386.161133, 14428.852539, -5116.968750)) end
+    if timer.Exists('ArrestTimeFor'..pPlayer:SteamID64()) then print(timer.TimeLeft('ArrestTimeFor'..pPlayer:SteamID64())) timer.UnPause('ArrestTimeFor'..pPlayer:SteamID64()) end
+    if timer.Exists('ArrestTimeFor'..pPlayer:SteamID64()) then pPlayer:SetPos(Vector(8235.947266, 7492.484863, -13869.968750)) end
 
 	local handsEntity = ents.Create('gmod_hands')
 
@@ -167,12 +172,12 @@ function GM:PlayerSpawn( pPlayer )
 	pPlayer:CalcWeight()
 	if t == TEAM_CONNECTING or t == TEAM_SPECTATOR or t == TEAM_UNASSIGNED then pPlayer:GodEnable() pPlayer:SetPos(Vector(-16090.513672, 16017.603516, 13229.506836)) else pPlayer:GodDisable() end
 	ULib.invisible(pPlayer, false, 255)
-	if NextRP.Config.customScale[team.GetName(t)] then timer.Simple(.1, function() pPlayer:SetModelScale(NextRP.Config.customScale[team.GetName(t)]) end) end
-	if next(flags) ~= nil then
-		for k, v in pairs(flags) do
-			if NextRP.Config.pipiskiScale[k] then timer.Simple(.2, function() pPlayer:SetModelScale(NextRP.Config.pipiskiScale[k]) end) end
-		end
-	end
+--	if NextRP.Config.customScale[team.GetName(t)] then timer.Simple(.1, function() pPlayer:SetModelScale(NextRP.Config.customScale[team.GetName(t)]) end) end
+--	if next(flags) ~= nil then
+--		for k, v in pairs(flags) do
+--			if NextRP.Config.pipiskiScale[k] then timer.Simple(.2, function() pPlayer:SetModelScale(NextRP.Config.pipiskiScale[k]) end) end
+--		end
+--	end
 	if timer.Exists('Regen '..pPlayer:SteamID64()) then timer.Remove('Regen '..pPlayer:SteamID64()) end
 	timer.Simple(.2, function()
 		local defaultviewoffset = Vector(0, 0, 64)
@@ -182,6 +187,13 @@ function GM:PlayerSpawn( pPlayer )
     end)
     pPlayer:SetNWInt('EnemyCount', 0)
 	if katarnTable[team.GetName(t)] then timer.Simple(.1, function() pPlayer:SetExoSuit("wicked") end) else timer.Simple(.1, function() pPlayer:SetNWString("hgexosuit", "") end) end
+	if dPath then
+		local tData = util.JSONToTable(file.Read(sPath))
+		for id, state in pairs(tData) do
+			pPlayer:SetNWBool(id, state)
+		end
+	end
+	timer.Simple(1, function() pPlayer.var = pPlayer:Health() or 100 end)
 end
 function GM:PlayerLoadout( pPlayer )
 	pPlayer:ShouldDropWeapon(false)
@@ -512,7 +524,6 @@ function GM:InitPostEntity()
 	game.ConsoleCommand("physgun_DampingFactor 0.9\n")
 	game.ConsoleCommand("sv_sticktoground 0\n")
 	game.ConsoleCommand("sv_airaccelerate 100\n")
-	game.ConsoleCommand("wos_roll_cameramode 0\n")
 	game.ConsoleCommand("sv_tfa_allow_dryfire 1\n")
 	game.ConsoleCommand("sv_tfa_dynamicaccuracy 1\n")
 	game.ConsoleCommand("sv_tfa_weapon_strip 0\n")

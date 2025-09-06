@@ -77,6 +77,10 @@ netstream.Hook('NextRP::ArrestArresting', function(pSender, pTarget, tText)
     Kitsune_Arest_Aresting(pSender, pTarget, tText)
 end)
 
+hook.Add('PlayerDisconnected', 'ArrestDCcheck', function(ply)
+    if timer.Exists('ArrestTimeFor'..ply:SteamID64()) then timer.Pause('ArrestTimeFor'..ply:SteamID64()) end
+end)
+
 --[[local function Kitsune_Arrest_Noty(pPlayer)
     for _, ply in player.Iterator() do
         if ply:Team() == 'Боец Бюро Безопастности' then LIB:SendMessage(pPlayer, -1, Color(255, 129, 56), '[БАЗА] ', Color(255,0,0), pPlayer:Nick()..' Испарился из КПЗ!') end

@@ -11,12 +11,6 @@ NextRP.Config.DeathTimes = {
 NextRP.Config.Pripiskis = {
 }
 
-NextRP.Config.WosNosoundTable = {
-    ["weapon_lightsaber_chainsword"] = true,
-    ["weapon_lightsaber_staff"] = true,
-    ["weapon_lightsaber_saber"] = true,
-}
-
 NextRP.Config.cadetDoors = {
     ['main_trainingroom_forcefield_1_BUTTON'] = true,
     ['main_trainingroom_forcefield_1_BUTTON1'] = true,
@@ -34,12 +28,12 @@ NextRP.Config.medicRealays = {
     ['medbay_forcefield_1'] = true,
 }
 
-NextRP.Config.customScale = {
-    ['Кадет'] = 1.0,
-}
+--NextRP.Config.customScale = {
+--    ['Кадет'] = 1.0,
+--}
 
-NextRP.Config.pipiskiScale = {
-}
+--NextRP.Config.pipiskiScale = {
+--}
 
 NextRP.Config.regenTable = {
 }
@@ -52,7 +46,7 @@ NextRP.Config.Link = {
     -- Правила
     Rule = 'https://docs.google.com/document/d/1ePuzNyuJq19eYoEqhtBDsU486c-DJPevU1e9r6-ueg8/edit?tab=t.0#heading=h.fgx3k797cb7t',
     -- Сайт
-    WebSite = 'https://sites.google.com/view/the-charter-of-var/главная', -- ссылка на сайт
+    WebSite = 'https://sites.google.com/view/dawnoftherepublic/главная-страница?authuser=0', -- ссылка на сайт
     -- Соцсети
     VK = '', -- ссылка на ВК
     Discord = 'https://discord.gg/buaJZ2SJm3', -- ссылка на Discord
@@ -82,13 +76,14 @@ NextRP.Config.Codes = {
           [TEAM_CTRP] = true,
           [TEAM_ARCRP] = true,
           [TEAM_RCRP] = true,
-          [TEAM_TSGRP] = true,
           [TEAM_ARCALPHARP] = true,
           [TEAM_ARCNULLRP] = true,
           [TEAM_MAZENRP] = true,
           [TEAM_HQNRP] = true,
           [TEAM_AGENTGAR] = true,
           [TEAM_MERC] = true,
+          [TEAM_CTCG] = true,
+          [TEAM_CTRP125] = true,
         }
     },
     States = {
@@ -144,14 +139,16 @@ NextRP.Config.AutoChatMessages = {
 end) -- и эту строку тоже не трогать
 
 NextRP.Config.UniqueIDs = {
-    ['STEAM_0:1:127564031'] = 'Raven',
-    ['STEAM_0:1:176075556'] = 'Mazefera',
+    ['STEAM_0:1:127564031'] = {'Raven'},
+    ['STEAM_0:1:176075556'] = {'Mazefera'},
+    ['STEAM_0:0:54343242'] = {'Kudere', true},
+    ['STEAM_0:1:576060442'] = {'КвестМейкер'},
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        function IsUnique(pPlayer) return NextRP.Config.UniqueIDs[pPlayer:SteamID()] or false end
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        function IsUnique(pPlayer) if IsValid(pPlayer) then return NextRP.Config.UniqueIDs[pPlayer:SteamID()] else return false end end
 hook.Add('NextRP::IconLoaded', 'NextRP::LoadIconsRelatedStuff', function()
 
 NextRP.Config.ControlsColors = {
-    [CONTROL_CIS] = Color(57, 204, 20),
+    [CONTROL_CIS] = Color(204, 57, 20),
     [CONTROL_GAR] = Color(77, 184, 255),
     [CONTROL_HEADHUNTERS] = Color(225, 255, 55),
     [CONTROL_NONE] = Color(255, 118, 248),
@@ -159,8 +156,8 @@ NextRP.Config.ControlsColors = {
 }
 
 NextRP.Config.ControlsMaterials = {
-    [CONTROL_CIS] = NextRP.Style.Materials.NecronIcon,
-    [CONTROL_GAR] = NextRP.Style.Materials.EmpireIcon,
+    [CONTROL_CIS] = NextRP.Style.Materials.DroidIcon,
+    [CONTROL_GAR] = NextRP.Style.Materials.CloneIcon,
     [CONTROL_HEADHUNTERS] = NextRP.Style.Materials.RPRoleIcon,
     [CONTROL_NONE] = NextRP.Style.Materials.ServerStuffIcon,
     [CONTROL_NATO] = NextRP.Style.Materials.DroidIcon

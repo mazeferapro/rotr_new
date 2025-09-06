@@ -116,3 +116,82 @@ concommand.Add("nextrp_givemoney", function(pPlayer, cmd, args)
         -- Лог
         print("[Money] Админ " .. pPlayer:Nick() .. " выдал " .. amount .. " CR игроку " .. targetPlayer:Nick())
     end)
+
+hook.Add("NextRP::InitializeCommands", "AddMoneyTransferCommand", function()
+    NextRP:AddCommand("givemoney", function(pPlayer, sText)
+        local args = string.Explode(" ", sText)
+        
+        if #args < 2 then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "Использование: /givemoney <имя игрока> <количество>")
+            return
+        end
+        
+        local playerName = args[1]
+        local amount = tonumber(args[2])
+        
+        if not amount or amount <= 0 then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "Количество денег должно быть положительным числом")
+            return
+        end
+        
+        -- Проверяем, хватает ли денег
+        if not pPlayer:CanAfford(amount) then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "У вас недостаточно денег! У вас: " .. (pPlayer:GetMoney() or 0) .. " CR")
+            return
+        end
+        
+        -- Ищем игрока по частичному совпадению имени
+        local targetPlayer = nil
+        local foundPlayers = {}
+        
+        for _, ply in ipairs(player.GetAll()) do
+            if string.find(string.lower(ply:Nick()), string.lower(playerName)) then
+                table.insert(foundPlayers, ply)
+            end
+        end
+        
+        if #foundPlayers == 0 then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "Игрок с именем '" .. playerName .. "' не найден")
+            return
+        elseif #foundPlayers > 1 then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "Найдено несколько игроков. Будьте более точными:")
+            for _, ply in ipairs(foundPlayers) do
+                pPlayer:SendMessage(MESSAGE_TYPE_NONE, "- " .. ply:Nick())
+            end
+            return
+        end
+        
+        targetPlayer = foundPlayers[1]
+        
+        -- Проверяем, что целевой игрок имеет персонажа
+        if targetPlayer:GetNVar('nrp_charid') == -1 then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "Нельзя передать деньги администратору")
+            return
+        end
+        
+        -- Проверяем, что игрок не передает деньги самому себе
+        if targetPlayer == pPlayer then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "Вы не можете передать деньги самому себе!")
+            return
+        end
+        
+        -- Проверяем расстояние между игроками
+        local distance = pPlayer:GetPos():Distance(targetPlayer:GetPos())
+        if distance > 200 then
+            pPlayer:SendMessage(MESSAGE_TYPE_ERROR, "Игрок слишком далеко! Подойдите ближе.")
+            return
+        end
+        
+        -- Используем существующую функцию SendMoney
+        pPlayer:SendMoney(amount, targetPlayer)
+        
+        -- Лог операции
+        print("[Money Transfer] " .. pPlayer:Nick() .. " передал " .. amount .. " CR игроку " .. targetPlayer:Nick())
+    end)
+    
+    -- Команда для проверки баланса
+    NextRP:AddCommand("money", function(pPlayer, sText)
+        local money = pPlayer:GetMoney() or 0
+        pPlayer:SendMessage(MESSAGE_TYPE_NONE, "Ваш баланс: " .. string.Comma(money) .. " CR")
+    end)
+end)

@@ -39,13 +39,12 @@ function ENT:Draw()
 	    	local inzone
 	    	for k, v in pairs(Arrestants) do
 	    		ply = player.GetBySteamID(k)
-				print(ply)
 	    		time = CurTime() - (ArrestantsTime[k] + v)
-	    		inzone = ply:Kitsune_Arrest_Escape()
+	    		if ply then inzone = ply:Kitsune_Arrest_Escape() else inzone = nil end
 	    		if placement < 875 then
 		    		draw.RoundedBox(0, 158, placement, 1384, 100, Color(49, 112, 112, 255))
 
-		    		draw.SimpleText(EPS_ShortenString(ply:Nick().." / Посажен: "..(string.NiceTime(CurTime() - ArrestantsTime[k])).. " назад".. (inzone and ' / Сидеть:'..(string.NiceTime(CurTime() - (ArrestantsTime[k] + v))) or ' / Сбежал!'), 120), "EPS_SimulationTracker", 855, placement + 50, inzone and Color(255,255,255) or Color(255,0,0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		    		draw.SimpleText(EPS_ShortenString((ply and ply:Nick() or k).." / Посажен: "..(string.NiceTime(CurTime() - ArrestantsTime[k])).. " назад".. (inzone and ' / Сидеть:'..(string.NiceTime(CurTime() - (ArrestantsTime[k] + v))) or ' / Сбежал!'), 120), "EPS_SimulationTracker", 855, placement + 50, inzone and Color(255,255,255) or Color(255,0,0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 		    		placement = placement + 125
 		    	end

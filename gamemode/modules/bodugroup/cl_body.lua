@@ -19,8 +19,7 @@ end
 
 local ui = {}
 
-function ui:openwardrobe(modelInfo)
-    
+function ui:openwardrobe(modelInfo, tmp)
     local job = LocalPlayer():getJobTable()
     local rank = LocalPlayer():GetRank()
 
@@ -50,6 +49,8 @@ function ui:openwardrobe(modelInfo)
     if modelInfo then 
         if modelInfo.model then
             icon:SetModel(modelInfo.model)
+        elseif tmp then
+            icon:SetModel(modelInfo)
         else
             local model = istable(job.ranks[rank].model) and table.Random(job.ranks[rank].model) or job.ranks[rank].model
             icon:SetModel(model)
@@ -352,4 +353,4 @@ function ui:update()
     end
 end
 
-netstream.Hook('NextRP::OpenWardrobe', function(modelInfo) ui:openwardrobe(modelInfo) end)
+netstream.Hook('NextRP::OpenWardrobe', function(modelInfo, tmp) ui:openwardrobe(modelInfo, tmp) end)

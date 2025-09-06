@@ -263,3 +263,149 @@ netstream.Hook('NextRP::BuyNewSlot', function(pPlayer)
         end)
     end
 end)
+
+function SetPlayerProfession(pPlayer, jobID)
+    if not IsValid(pPlayer) or not pPlayer:IsPlayer() then
+        print("Ошибка: неверный игрок")
+        return false
+    end
+    
+    -- Проверяем, что профессия существует
+    local job = NextRP.GetJobByID(jobID)
+    if not job then
+        print("Ошибка: профессия с ID '" .. jobID .. "' не найдена")
+        return false
+    end
+    
+    local charID = pPlayer:GetNVar('nrp_charid')
+    if not charID or charID == -1 then
+        print("Ошибка: нельзя изменить профессию администратору или персонаж не найден")
+        return false
+    end
+    
+    local char = pPlayer:CharacterByID(charID)
+    if not char then
+        print("Ошибка: персонаж не найден")
+        return false
+    end
+    
+    -- Если игрок онлайн и играет за этого персонажа
+    if pPlayer:GetNVar('nrp_charid') == charID then
+        -- Меняем профессию напрямую через игрока
+        pPlayer:ChangeTeam(job.index, false)
+        print("Профессия игрока " .. pPlayer:Nick() .. " изменена на " .. job.name)
+        return true
+    else
+        -- Если персонаж не активен, изменяем в базе данных
+        chars:SetCharValue(charID, 'team_id', job.id, function()
+            chars:SetCharValue(charID, 'rankid', job.default_rank, function()
+                print("Профессия персонажа #" .. charID .. " изменена на " .. job.name)
+            end)
+        end)
+        return true
+    end
+end
+
+function GivePlayerRank(pPlayer, rankID)
+    if not IsValid(pPlayer) or not pPlayer:IsPlayer() then
+        print("Ошибка: неверный игрок")
+        return false
+    end
+    
+    if not isstring(rankID) then
+        print("Ошибка: звание должно быть строкой")
+        return false
+    end
+    
+    local charID = pPlayer:GetNVar('nrp_charid')
+    if not charID or charID == -1 then
+        print("Ошибка: нельзя изменить звание администратору или персонаж не найден")
+        return false
+    end
+    
+    local char = pPlayer:CharacterByID(charID)
+    if not char then
+        print("Ошибка: персонаж не найден")
+        return false
+    end
+    
+    -- Проверяем, что звание существует в профессии
+    local job = pPlayer:getJobTable()
+    if not job or not job.ranks or not job.ranks[rankID] then
+        print("Ошибка: звание '" .. rankID .. "' не найдено в текущей профессии")
+        return false
+    end
+    
+    -- Устанавливаем звание
+    NextRP.Ranks:SetRank(pPlayer, pPlayer, rankID)
+    
+    print("Игроку " .. pPlayer:Nick() .. " установлено звание " .. rankID)
+    return true
+end
+
+-- Функция для выдачи определённой специализации (флага)
+-- @param pPlayer - игрок, которому выдаем специализацию
+-- @param flagID - ID специализации/флага (строка, например 'medic', 'engineer', 'arc')
+function GivePlayerSpecialization(pPlayer, flagID)
+    if not IsValid(pPlayer) or not pPlayer:IsPlayer() then
+        print("Ошибка: неверный игрок")
+        return false
+    end
+    
+    if not isstring(flagID) then
+        print("Ошибка: ID специализации должно быть строкой")
+        return false
+    end
+    
+    local charID = pPlayer:GetNVar('nrp_charid')
+    if not charID or charID == -1 then
+        print("Ошибка: нельзя изменить специализацию администратору или персонаж не найден")
+        return false
+    end
+    
+    local char = pPlayer:CharacterByID(charID)
+    if not char then
+        print("Ошибка: персонаж не найден")
+        return false
+    end
+    
+    -- Проверяем текущие флаги персонажа
+    local currentFlags = pPlayer:GetNVar('nrp_charflags') or {}
+    if currentFlags[flagID] then
+        print("У игрока " .. pPlayer:Nick() .. " уже есть специализация " .. flagID)
+        return false
+    end
+    
+    -- Добавляем флаг
+    NextRP.Ranks:AddFlag(pPlayer, pPlayer, flagID)
+    
+    print("Игроку " .. pPlayer:Nick() .. " добавлена специализация " .. flagID)
+    return true
+end
+
+concommand.Add("nrp_setjob", function(pPlayer, cmd, args)
+    if not pPlayer:IsAdmin() then return end
+    
+    if #args < 2 then
+        pPlayer:ChatPrint("Использование: nrp_setjob <имя игрока> <ID профессии>")
+        return
+    end
+    
+    local targetName = args[1]
+    local jobID = args[2]
+    
+    local targetPlayer = nil
+    for _, ply in ipairs(player.GetAll()) do
+        if string.find(string.lower(ply:Nick()), string.lower(targetName)) then
+            targetPlayer = ply
+            break
+        end
+    end
+    
+    if not targetPlayer then
+        pPlayer:ChatPrint("Игрок не найден")
+        return
+    end
+    
+    SetPlayerProfession(targetPlayer, jobID)
+end)

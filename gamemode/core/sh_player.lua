@@ -130,26 +130,26 @@ hook.Add("PlayerFootstep", "NextRP_CustomFootsteps", function(ply, pos, foot, so
 end)
 
 
-local pipiskiScale = {
-    ['DDT'] = 1.8,
-    ['Терминатор'] = 1.1,
-    ['Огрин'] = 1.7
-}
+--local pipiskiScale = {
+--    ['DDT'] = 1.8,
+--    ['Терминатор'] = 1.1,
+--    ['Огрин'] = 1.7
+--}
 
-hook.Add("PlayerSpawn", "ViewJfs", function(ply)
-    local t = ply:Team()
-    local flags = ply:GetNVar('nrp_charflags') or {}
-    local defaultviewoffset = Vector(0, 0, 64)
-    local defaultviewoffsetducked = Vector(0, 0, 38)
-    timer.Simple(0.2, function()
+--hook.Add("PlayerSpawn", "ViewJfs", function(ply)
+--    local t = ply:Team()
+--    local flags = ply:GetNVar('nrp_charflags') or {}
+--    local defaultviewoffset = Vector(0, 0, 64)
+--    local defaultviewoffsetducked = Vector(0, 0, 38)
+    --[[timer.Simple(0.2, function()
         if NextRP.Config.customScale[team.GetName(t)] then ply:SetViewOffset(defaultviewoffset * NextRP.Config.customScale[team.GetName(t)]) ply:SetViewOffsetDucked(defaultviewoffsetducked * NextRP.Config.customScale[team.GetName(t)]) else ply:SetViewOffset(defaultviewoffset) ply:SetViewOffsetDucked(defaultviewoffsetducked) end
-    end)
-    if next(flags) ~= nil then
-        for k, v in pairs(flags) do
-            if pipiskiScale[k] then timer.Simple(.2, function() ply:SetViewOffset(defaultviewoffset * pipiskiScale[k]) ply:SetViewOffsetDucked(defaultviewoffsetducked * pipiskiScale[k]) end) end
-        end
-    end
-end)
+    end)]]--
+   -- if next(flags) ~= nil then
+ --       for k, v in pairs(flags) do
+  --          if pipiskiScale[k] then timer.Simple(.2, function() ply:SetViewOffset(defaultviewoffset * pipiskiScale[k]) ply:SetViewOffsetDucked(defaultviewoffsetducked * pipiskiScale[k]) end) end
+ --       end
+ --   end
+-- end)
 
 function ShowPlayerSpeed(pPlayer)
     local walkSpeed = pPlayer:GetWalkSpeed()
@@ -161,6 +161,15 @@ function ShowPlayerSpeed(pPlayer)
     pPlayer:ChatPrint("Бег: " .. runSpeed) 
     pPlayer:ChatPrint("Медленная ходьба: " .. slowSpeed)
 end
+
+
+function ScaleFixV(pPlayer, scale)
+    local defaultviewoffset = Vector(0, 0, 64)
+    local defaultviewoffsetducked = Vector(0, 0, 38)
+    pPlayer:SetViewOffset(defaultviewoffset * scale)
+    pPlayer:SetViewOffsetDucked(defaultviewoffsetducked * scale)
+end
+
 
 concommand.Add("nrp_showspeed", function(pPlayer, cmd, args)
     if not pPlayer:IsAdmin() then return end

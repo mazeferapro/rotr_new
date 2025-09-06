@@ -57,6 +57,12 @@ function NextRP.Progression:AddXP(pPlayer, amount)
     end
     
     -- Добавляем опыт
+    local tCP = ents.FindByClass('nextrp_controlpoint')
+    local tJob = pPlayer:getJobTable()
+
+    for _, cp in ipairs(tCP) do
+        if tJob.control == cp:GetControl() then amount = amount + (amount * .02) end
+    end
     local newXP = currentXP + amount
     local xpForNextLevel = self:GetXPForLevel(currentLevel + 1)
     local leveledUp = false
@@ -478,7 +484,7 @@ end
 
 -- Загрузка прогресса персонажа при входе в игру
 function NextRP.Progression:LoadCharacterProgression(pPlayer)
-    if not IsValid(pPlayer) or not pPlayer:GetNVar('nrp_charid') then return end
+    if not IsValid(pPlayer) or not pPlayer:GetNVar('nrp_charid') or not NextRP.GetJob(pPlayer:Team()) then return end
     
     local charID = pPlayer:GetNVar('nrp_charid')
     if charID == -1 then return end -- Пропускаем для администраторов
@@ -651,7 +657,7 @@ hook.Add("NextRP::ModulesLoaded", "NextRP::SetupXPHooks", function()
     
     -- Опыт за время игры (каждые 10 минут)
     timer.Create("NextRP::PlaytimeXP", 600, 0, function()
-        for _, ply in ipairs(player.GetAll()) do
+        for _, ply in player.Iterator() do
             if IsValid(ply) and ply:GetNVar('nrp_charid') and ply:GetNVar('nrp_charid') != -1 and ply:Alive() then
                 NextRP.Progression:AddXP(ply, 25) -- 25 опыта каждые 10 минут активной игры
             end

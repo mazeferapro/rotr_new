@@ -13,7 +13,7 @@ scoreboard.Blur = scoreboardBlur
 
 local function pingColor(pPlayer)
     local p = 1
-    if pPlayer ~= NULL then
+    if IsValid(pPlayer) and pPlayer ~= NULL then
         p = pPlayer:Ping()
     end
 
@@ -27,6 +27,7 @@ local function pingColor(pPlayer)
 end
 
 function scoreboard:Player(pPlayer)
+    if pPlayer == nil or pPlayer == NULL or !IsValid(pPlayer) then return end
 
     local spec = pPlayer:GetNVar('nrp_charflags') or {}
 	local jt = pPlayer:getJobTable()
@@ -53,7 +54,7 @@ function scoreboard:Player(pPlayer)
 
             surface.SetDrawColor(40, 40, 40, 150)
             surface.DrawRect(0, 0, w, h)
-            
+
             draw.SimpleText(rank, 'font_sans_21', 64 + 16 + 4 + 20, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
             surface.SetFont('font_sans_21')
@@ -62,9 +63,9 @@ function scoreboard:Player(pPlayer)
             surface.SetDrawColor(40, 40, 40, 150)
             surface.DrawRect(64 + 16 + 4 + 56 + 70 - nx, 0, nx  * 2, h)
 
-            draw.SimpleText(pPlayer:GetNumber(), 'font_sans_21', 64 + 16 + 4 + 56 + 70, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            
-            draw.SimpleText(pPlayer:Nick1(), 'font_sans_21', 64 + 16 + 4 + 56 + 120 + 49 + 50, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            draw.SimpleText(IsValid(pPlayer) and pPlayer:GetNumber() or '----', 'font_sans_21', 64 + 16 + 4 + 56 + 70, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+            draw.SimpleText(IsValid(pPlayer) and pPlayer:Nick1() or 'Имя', 'font_sans_21', 64 + 16 + 4 + 56 + 120 + 49 + 50, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
             draw.SimpleText(final, 'font_sans_21', w*.5, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
@@ -72,12 +73,17 @@ function scoreboard:Player(pPlayer)
             if isstring(NextRP.Style.Materials.Ping) then draw.SimpleText(pPlayer:Ping()) else surface.SetMaterial(NextRP.Style.Materials.Ping) end
 
             surface.DrawTexturedRect(w - 64 - 16 - 9 - 23, h*.5 - 8, 16, 16)
+            --print(IsUnique(pPlayer))
 
-            draw.SimpleText(IsUnique(pPlayer) or pPlayer:GetUserGroup(), 'font_sans_21', w - 16 - 4 - 38 - 300,  h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            if !istable(IsUnique(pPlayer)) then
+                draw.SimpleText(IsValid(pPlayer) and pPlayer:GetUserGroup() or 'Игрок', 'font_sans_21', w - 16 - 4 - 38 - 300,  h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            else
+                 draw.SimpleText(IsUnique(pPlayer)[1], 'font_sans_21', w - 16 - 4 - 38 - 300, h * .5 - 1, IsUnique(pPlayer)[2] and HSVToColor(  ( CurTime() * 100 ) % 360, 1, 1 ) or NextRP.Style.Theme.HightlightText, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            end
 
             local frags = pPlayer:Frags() >= 0 and pPlayer:Frags() or '0'
             draw.SimpleText(frags..' / '..pPlayer:Deaths(), 'font_sans_21', w - 16 - 4 - 38 - 170,  h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        
+
         end)
 
     PlayerPanel:SetHeight(32)
@@ -124,7 +130,7 @@ function scoreboard:Player(pPlayer)
                     BanActions:AddOption('На 60 минут', function() LIB:DoStringRequest('Бан', 'Введите причину для бана игрока '..pPlayer:Nick1()..' на 60 минут.', '', function(str) RunConsoleCommand('ulx', 'banid', pPlayer:SteamID(), '60', str) surface.PlaySound('gmodadminsuite/success.ogg') end, nil, 'Забанить!', 'Отмена') end):SetIcon('icon16/accept.png')
                     BanActions:AddOption('Указать время', function()
                         NextRP:QuerryText(QUERY_MAT_QUESTION, NextRP.Style.Theme.Accent, 'Введите время бана для '..pPlayer:Nick()..' в минутах.', '', 'Далее!', function(BanL)
-                            NextRP:QuerryText(QUERY_MAT_QUESTION, NextRP.Style.Theme.Accent, 'Введите причину для бана игрока '..pPlayer:Nick()..' на '..BanL..' минут(ы).', '', 'Забанить!', 
+                            NextRP:QuerryText(QUERY_MAT_QUESTION, NextRP.Style.Theme.Accent, 'Введите причину для бана игрока '..pPlayer:Nick()..' на '..BanL..' минут(ы).', '', 'Забанить!',
                             function(BanR)
                                 RunConsoleCommand('sam', 'banid', pPlayer:SteamID(), BanL, BanR)
                                 surface.PlaySound('gmodadminsuite/success.ogg')
@@ -155,7 +161,7 @@ function scoreboard:Line(nHeight, tColor)
     return line
 end
 
-function scoreboard:AddCategory(icon, name, color) 
+function scoreboard:AddCategory(icon, name, color)
     if not color then color = NextRP.Style.Theme.Accent end
     local Category = TDLib('DCollapsibleCategory', self.ScrollBase)
             :Stick(TOP)
@@ -206,7 +212,7 @@ function scoreboard:ScoreboardToggle(bToggle)
             :ClearPaint()
             :Background(Color(40, 40, 40, 200))
             :FadeIn()
- 
+
         local base = scoreboardBase
         scoreboard.Base = base
         scoreboard.Blur = scoreboardBlur
@@ -229,7 +235,7 @@ function scoreboard:ScoreboardToggle(bToggle)
                 surface.DrawRect(0, 0, w, h)
 
                 draw.SimpleText('Звание', 'font_sans_21', 64 + 16 + 4 + 20, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-                
+
                 draw.SimpleText('Номер', 'font_sans_21', 64 + 16 + 4 + 56 + 70, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                 draw.SimpleText('Имя', 'font_sans_21', 64 + 16 + 4 + 56 + 120 + 49 + 50, h * .5 - 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
@@ -243,7 +249,7 @@ function scoreboard:ScoreboardToggle(bToggle)
         Info:DockMargin(0, 3, 0, 3)
 
         base:Add(scoreboard:Line(1))
-        
+
         local scrollPanel = TDLib('DScrollPanel', base)
             :Stick(FILL, 5)
 
@@ -251,7 +257,7 @@ function scoreboard:ScoreboardToggle(bToggle)
 	    scrollPanel:GetVBar():Hide()
 
         self.ScrollBase = scrollPanel
-       
+
         for k, v in NextRP.GetSortedCategories() do
             local shouldDelete = true
 
@@ -270,6 +276,7 @@ function scoreboard:ScoreboardToggle(bToggle)
 
                 for kc, pl in ipairs(team.GetPlayers(member.index)) do
                     if pl and pl:GetNVar('is_load_char') then
+                        if pl == nil or pl == NULL or !IsValid(pl) then continue end
                         categ:Add(scoreboard:Player(pl))
                     end
                 end
@@ -329,6 +336,7 @@ function scoreboard:ScoreboardToggle(bToggle)
 
 
         for k, v in ipairs(player.GetHumans()) do
+            if v == nil or v == NULL or !IsValid(v) then continue end
             if v:IsAdmin() then
 
                 local panel = stuffScroller:Add('PawsUI.Panel')
@@ -336,7 +344,11 @@ function scoreboard:ScoreboardToggle(bToggle)
                     :Background(NextRP.Style.Theme.Background)
                     :On('Paint', function(s, w, h)
                         draw.SimpleText(v:Name(), 'font_sans_22', 55, h * .5 + 3, NextRP.Style.Theme.Text, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-                        draw.SimpleText(IsUnique(v) or v:GetUserGroup(), 'font_sans_21', 55, h * .5 - 2, NextRP.Style.Theme.HightlightText, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                        if !istable(IsUnique(v)) then
+                            draw.SimpleText(IsValid(pPlayer) and v:GetUserGroup() or 'None', 'font_sans_21', 55, h * .5 - 2, NextRP.Style.Theme.HightlightText, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                        else
+                            draw.SimpleText(IsUnique(v)[1], 'font_sans_21', 55, h * .5 - 2, IsUnique(v)[2] and HSVToColor(  ( CurTime() * 100 ) % 360, 1, 1 ) or NextRP.Style.Theme.HightlightText, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                        end
                     end)
 
                 panel:DockMargin(2, 2, 2, 0)
@@ -348,6 +360,11 @@ function scoreboard:ScoreboardToggle(bToggle)
                 avatar:SetPos(2, 2)
             end
         end
+        --[[timer.Simple(10, function()
+            scoreboard.Base:Remove()
+            scoreboard.Blur:Remove()
+            scoreboard.StuffBlock:Remove()
+        end)]]--
     else
         if IsValid(scoreboard.Base) then
             scoreboard.Base:TDLib():FadeOut()
@@ -365,9 +382,15 @@ end
 
 hook.Add('ScoreboardShow', 'Paws.Scoreboard.Show', function()
     scoreboard:ScoreboardToggle(true)
+    timer.Create('fade'..LocalPlayer():SteamID64(), 15, 1, function()
+            scoreboard.Base:Remove()
+            scoreboard.Blur:Remove()
+            scoreboard.StuffBlock:Remove()
+        end)
     return false
 end)
 
 hook.Add('ScoreboardHide', 'Paws.Scoreboard.Show', function()
     scoreboard:ScoreboardToggle(false)
+    if timer.Exists('fade'..LocalPlayer():SteamID64()) then timer.Remove('fade'..LocalPlayer():SteamID64()) end
 end)

@@ -11,6 +11,7 @@ local function DrawFlexText(colors, font, x, y)
 end
 
 hook.Add('HUDPaint', 'NextRP::DrawCode', function()
+    if LocalPlayer():GetNWBool('Dcd') then return end
     local jt = LocalPlayer():getJobTable()
     if not jt then return end
 

@@ -54,13 +54,8 @@ ArrestantsTime = ArrestantsTime or {}
     Vector(-12082.882813, -780.936401, 421.763184),
 }]]--
 
-
-local Access = {
-    ['Боец 882-го'] = true
-}
-
 function ENT:Use( activator, Caller )
-    if activator:IsPlayer() and ( Access[team.GetName(activator:Team())] or activator:IsAdmin() ) then
+    if activator:IsPlayer() and ( Kitsune_Arrest.Access[team.GetName(activator:Team())] or activator:IsAdmin() ) then
         local pl = player.GetAll()
         netstream.Start(activator, 'NextRP::OpenArrestMenu', activator, pl)
     else

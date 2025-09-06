@@ -327,8 +327,26 @@ local function Ammunition(tWeapons, tDWeapons)
     end
 end
 
+
+local function removeAllDuplicates(tbl)
+    local seen = {}
+    local result = {}
+
+    for _, v in ipairs(tbl) do
+        if not seen[v] then
+            seen[v] = true
+            table.insert(result, v)
+        end
+    end
+
+    return result
+end
+
+
 netstream.Hook('NextRP::OpenAmmunitionMenu', function(tWeapons, tDWeapons)
-	Ammunition(tWeapons, tDWeapons)
+	local uniqWep = removeAllDuplicates(tWeapons)
+	local uniqDWep = removeAllDuplicates(tDWeapons)
+	Ammunition(uniqWep, uniqDWep)
 end)
 
 function makeBar(val, x, y, w, h, col, angle, max)

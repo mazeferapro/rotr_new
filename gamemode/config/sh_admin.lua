@@ -3,8 +3,7 @@ NextRP.Config.Admins = {
     ['admin'] = true,
     ['moderator'] = true,
     ['helper'] = true,
-    ['supereventmanager'] = true,
+    ['senioreventmaker'] = true,
     ['eventmanager'] = true,
-    ['eventmanagerintern'] = true,
-    ['operator'] = true,
+    ['junioreventmaker'] = true,
 }

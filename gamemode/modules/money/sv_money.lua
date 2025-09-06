@@ -1,5 +1,5 @@
 local function PayDay()
-    for k, v in pairs(player.GetHumans()) do
+    for k, v in player.Iterator() do
         local tJob = v:getJobTable()
         if not tJob then continue end
 
@@ -12,9 +12,16 @@ local function PayDay()
         local curMoney = v:GetMoney()
         local newMoney = curMoney + tJob.Salary
 
+        local tCP = ents.FindByClass('nextrp_controlpoint')
+
+        for _, cp in ipairs(tCP) do
+            if tJob.control == cp:GetControl() then newMoney = newMoney + 25 end
+        end
+
+
         v:SetMoney(newMoney)
 
-        v:SendNotification('Вы получили '..tJob.Salary..' CR!', 0, 3, NextRP.Style.Theme.Accent, NextRP.Style.Theme.Text)
+        v:SendNotification('Вы получили '..(newMoney - curMoney)..' CR!', 0, 3, NextRP.Style.Theme.Accent, NextRP.Style.Theme.Text)
     end
 end
 

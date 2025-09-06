@@ -242,7 +242,7 @@ end
 
 function ENT:OnPointCaptured()
     -- Уведомление всех игроков
-    for _, ply in pairs(player.GetAll()) do
+    for _, ply in player.Iterator() do
         if IsValid(ply) then
             ply:PrintMessage(HUD_PRINTTALK, "Точка '" .. self:GetPointName() .. "' захвачена!")
         end

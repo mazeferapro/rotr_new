@@ -19,7 +19,9 @@ end
  
 function ENT:Use( activator, caller )
 	if caller:IsPlayer() then
+		local tmp = nil
 		local modelInfo = caller:CharacterByID(caller:GetNVar('nrp_charid')).model
+		if modelInfo['model'] ~= caller:GetModel() then tmp = true modelInfo = caller:GetModel() end
 		netstream.Start(caller, 'NextRP::OpenWardrobe', modelInfo)
 	end
 end
